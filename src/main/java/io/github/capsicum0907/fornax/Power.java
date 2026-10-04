@@ -22,6 +22,13 @@ public interface Power {
 
     void load(CompoundTag tag, HolderLookup.Provider registries);
 
+    default void idle() {
+    }
+
+    default boolean burning() {
+        return false;
+    }
+
     default ItemStackHandler fuel() {
         return null;
     }

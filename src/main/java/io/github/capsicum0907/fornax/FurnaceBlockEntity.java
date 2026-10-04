@@ -137,9 +137,13 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         for (int line = 0; line < furnace.rung.lines(); line++) {
             working |= furnace.work(level, line);
         }
-        furnace.working = working;
-        if (state.getValue(FurnaceBlock.LIT) != working) {
-            level.setBlock(pos, state.setValue(FurnaceBlock.LIT, working), 3);
+        if (!working) {
+            furnace.power.idle();
+        }
+        boolean lit = working || furnace.power.burning();
+        furnace.working = lit;
+        if (state.getValue(FurnaceBlock.LIT) != lit) {
+            level.setBlock(pos, state.setValue(FurnaceBlock.LIT, lit), 3);
         }
     }
 

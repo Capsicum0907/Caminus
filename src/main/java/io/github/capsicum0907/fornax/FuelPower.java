@@ -11,6 +11,7 @@ public class FuelPower implements Power {
     private static final String FUEL = "Fuel";
     private static final String HEAT = "Heat";
     private static final String BURN_LENGTH = "BurnLength";
+    private static final int IDLE_BURN = 1;
 
     private final ItemStackHandler fuel;
     private int heat;
@@ -45,6 +46,16 @@ public class FuelPower implements Power {
 
     public int heat() {
         return heat;
+    }
+
+    @Override
+    public void idle() {
+        heat = Math.max(0, heat - IDLE_BURN);
+    }
+
+    @Override
+    public boolean burning() {
+        return heat > 0;
     }
 
     @Override

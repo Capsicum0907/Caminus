@@ -21,6 +21,7 @@ import io.github.capsicum0907.fornax.data.TestStructures;
 public final class FornaxTests {
     private static final BlockPos WHERE = new BlockPos(2, 1, 2);
     private static final int VANILLA_TIMEOUT = 300;
+    private static final int LEFTOVER_TIMEOUT = 1_800;
     private static final ResourceLocation RAW_IRON_RECIPE =
             ResourceLocation.withDefaultNamespace("iron_ingot_from_smelting_raw_iron");
 
@@ -102,7 +103,6 @@ public final class FornaxTests {
         furnace.fuel().setStackInSlot(0, new ItemStack(Items.COAL));
         helper.runAtTickTime(10, () -> {
             check(furnace.outputs().getStackInSlot(0).getCount() == 3, "three in, three out");
-            check(furnace.heat() == 1000, "and five items of burning are kept, not " + furnace.heat());
             check(furnace.used(RAW_IRON_RECIPE) == 3, "and counted for experience");
             helper.succeed();
         });
@@ -294,5 +294,22 @@ public final class FornaxTests {
             check(recipes.byKey(id).isPresent(), id + " should have a recipe");
         }
         helper.succeed();
+    }
+
+    @GameTest(template = TestStructures.FLOOR, timeoutTicks = LEFTOVER_TIMEOUT)
+    public static void leftoverFireBurnsAwayLikeVanilla(GameTestHelper helper) {
+        FurnaceBlockEntity furnace = place(helper, Tier.COPPER);
+        furnace.inputs().put(0, new ItemStack(Items.RAW_IRON));
+        furnace.fuel().setStackInSlot(0, new ItemStack(Items.COAL));
+        helper.runAtTickTime(100, () -> {
+            check(furnace.outputs().getStackInSlot(0).getCount() == 1, "the iron is done");
+            check(furnace.getBlockState().getValue(FurnaceBlock.LIT), "and the rest of the coal is still burning");
+            check(furnace.heat() < 1_400, "and burning down, at " + furnace.heat());
+        });
+        helper.runAtTickTime(1_700, () -> {
+            check(furnace.heat() == 0, "the coal has burnt out, not " + furnace.heat());
+            check(!furnace.getBlockState().getValue(FurnaceBlock.LIT), "and the furnace has gone out");
+            helper.succeed();
+        });
     }
 }
