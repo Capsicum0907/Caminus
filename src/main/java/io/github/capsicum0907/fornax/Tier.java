@@ -7,14 +7,14 @@ import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
 public enum Tier implements StringRepresentable {
-    COPPER(0xE07C57, false, 1),
-    IRON(0xD5DBE0, false, 1),
-    GOLD(0xF0C246, false, 1),
-    DIAMOND(0x5BE0D6, false, 1),
-    NETHERITE(0xB0A2A5, false, 1),
-    NETHER_STAR(0xF3EFD8, false, 1),
-    COMPRESSED_NETHER_STAR(0xCBBCE8, true, 4),
-    SUPER_COMPRESSED_NETHER_STAR(0x9B7BDF, true, 16);
+    COPPER(0xE07C57, false, 1, 1),
+    IRON(0xD5DBE0, false, 1, 1),
+    GOLD(0xF0C246, false, 1, 1),
+    DIAMOND(0x5BE0D6, false, 1, 4),
+    NETHERITE(0xB0A2A5, false, 1, 16),
+    NETHER_STAR(0xF3EFD8, false, 1, 64),
+    COMPRESSED_NETHER_STAR(0xCBBCE8, true, 4, 128),
+    SUPER_COMPRESSED_NETHER_STAR(0x9B7BDF, true, 16, 256);
 
     public static final Tier SPEED_CEILING = NETHER_STAR;
 
@@ -24,11 +24,13 @@ public enum Tier implements StringRepresentable {
     private final int colour;
     private final boolean compressed;
     private final int lines;
+    private final int batch;
 
-    Tier(int colour, boolean compressed, int lines) {
+    Tier(int colour, boolean compressed, int lines, int batch) {
         this.colour = colour;
         this.compressed = compressed;
         this.lines = lines;
+        this.batch = batch;
     }
 
     public String id() {
@@ -45,6 +47,10 @@ public enum Tier implements StringRepresentable {
 
     public int lines() {
         return lines;
+    }
+
+    public int batch() {
+        return batch;
     }
 
     public int rung() {

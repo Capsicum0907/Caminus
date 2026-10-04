@@ -49,11 +49,11 @@ public final class FornaxTests {
 
     @GameTest(template = TestStructures.FLOOR)
     public static void theTiersMatchTheTable(GameTestHelper helper) {
-        expect(Tier.COPPER, 83, 2, 1);
-        expect(Tier.IRON, 34, 4, 1);
-        expect(Tier.GOLD, 14, 8, 1);
-        expect(Tier.DIAMOND, 6, 16, 1);
-        expect(Tier.NETHERITE, 2, 32, 1);
+        expect(Tier.COPPER, 83, 1, 1);
+        expect(Tier.IRON, 34, 1, 1);
+        expect(Tier.GOLD, 14, 1, 1);
+        expect(Tier.DIAMOND, 6, 4, 1);
+        expect(Tier.NETHERITE, 2, 16, 1);
         expect(Tier.NETHER_STAR, 1, 64, 1);
         expect(Tier.COMPRESSED_NETHER_STAR, 1, 128, 4);
         expect(Tier.SUPER_COMPRESSED_NETHER_STAR, 1, 256, 16);
@@ -61,7 +61,7 @@ public final class FornaxTests {
     }
 
     @GameTest(template = TestStructures.FLOOR)
-    public static void copperSmeltsTwoAtOnceAfterEightyThreeTicks(GameTestHelper helper) {
+    public static void copperSmeltsOneAfterEightyThreeTicks(GameTestHelper helper) {
         FurnaceBlockEntity furnace = place(helper, Tier.COPPER);
         furnace.inputs().put(0, new ItemStack(Items.RAW_IRON, 2));
         furnace.fuel().setStackInSlot(0, new ItemStack(Items.COAL));
@@ -73,8 +73,8 @@ public final class FornaxTests {
                 "nothing should be done before 83 ticks"));
         helper.runAtTickTime(90, () -> {
             ItemStack out = furnace.outputs().getStackInSlot(0);
-            check(out.is(Items.IRON_INGOT) && out.getCount() == 2, "both should come out together, not " + out);
-            check(furnace.inputs().getStackInSlot(0).isEmpty(), "and the input should be used up");
+            check(out.is(Items.IRON_INGOT) && out.getCount() == 1, "one should come out, not " + out);
+            check(furnace.inputs().getStackInSlot(0).getCount() == 1, "and the other should still be waiting");
             helper.succeed();
         });
     }

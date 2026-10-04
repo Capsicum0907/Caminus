@@ -22,11 +22,11 @@ Furnaces in eight tiers. Each tier smelts faster and more items at once.
 | Tier | Material | Ticks per smelt | Items per smelt | Slots | Items per second |
 |---|---|---|---|---|---|
 | — | Vanilla furnace | 200 | 1 | 1 | 0.1 |
-| 1 | Copper | 83 | 2 | 1 | 0.48 |
-| 2 | Iron | 34 | 4 | 1 | 2.4 |
-| 3 | Gold | 14 | 8 | 1 | 11 |
-| 4 | Diamond | 6 | 16 | 1 | 53 |
-| 5 | Netherite | 2 | 32 | 1 | 320 |
+| 1 | Copper | 83 | 1 | 1 | 0.24 |
+| 2 | Iron | 34 | 1 | 1 | 0.59 |
+| 3 | Gold | 14 | 1 | 1 | 1.4 |
+| 4 | Diamond | 6 | 4 | 1 | 13 |
+| 5 | Netherite | 2 | 16 | 1 | 160 |
 | 6 | Nether Star | 1 | 64 | 1 | 1,280 |
 | 7 | Compressed Nether Star | 1 | 128 | 4 | 10,240 |
 | 8 | Super Compressed Nether Star | 1 | 256 | 16 | 81,920 |
@@ -59,7 +59,7 @@ A slot holds two smelts' worth of items, or one stack, whichever is more.
 
 ## Config
 
-`serverconfig/fornax-server.toml`, per tier: `ticks` and `batch` (items per smelt).
+`config/fornax-server.toml`, per tier: `ticks` and `batch` (items per smelt).
 `capacityBatches` sets how many smelts a slot holds.
 
 ## Build

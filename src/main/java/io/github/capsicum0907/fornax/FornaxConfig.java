@@ -40,7 +40,7 @@ public final class FornaxConfig {
     }
 
     public static int defaultBatch(Tier tier) {
-        return 1 << tier.rung();
+        return tier.batch();
     }
 
     public static int ticks(Tier tier) {
