@@ -60,9 +60,9 @@
   ],
   "render_type": "minecraft:cutout",
   "textures": {
-    "front": "minecraft:block/furnace_front",
+    "front": "minecraft:block/furnace_side",
     "overlay": "fornax:block/electric_furnace_overlay",
-    "particle": "minecraft:block/furnace_front",
+    "particle": "minecraft:block/furnace_side",
     "side": "minecraft:block/furnace_side",
     "top": "minecraft:block/furnace_top"
   }

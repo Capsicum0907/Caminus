@@ -1,4 +1,4 @@
-// 1.21.1	2026-10-04T21:40:30.0057096	Block States: fornax
+// 1.21.1	2026-10-04T23:02:38.3430271	Block States: fornax
 151c1c1051bc2a6becc94e87f054f9daad4f16c5 assets/fornax/blockstates/compressed_nether_star_electric_furnace.json
 ab58893e204de334f73deb9cd89839187206d298 assets/fornax/blockstates/compressed_nether_star_furnace.json
 1f6061c11464b40cedb6ba781b6a44747a1c9040 assets/fornax/blockstates/copper_electric_furnace.json
@@ -28,8 +28,8 @@ e14db32bd24df5bb0769a84bbddd044c7c7e9676 assets/fornax/models/block/copper_furna
 3ca520c755d6b94d2bd609baabde64bce8f8454b assets/fornax/models/block/diamond_electric_furnace_on.json
 b4036d20bcd3b5cc5b3e686ee4656ccdd240845e assets/fornax/models/block/diamond_furnace.json
 8cbf8a418a9980bbdbf4ddba0e5f81f6eed02db2 assets/fornax/models/block/diamond_furnace_on.json
-e5e93592ec86bf1d3106bf202679b945d19d2f54 assets/fornax/models/block/electric_furnace.json
-3e77a28d2c01637f4bfe2c91a10b8a8c4c36a36a assets/fornax/models/block/electric_furnace_on.json
+76fd4e83d82e08483f9d4f53396319e8c32a5dcc assets/fornax/models/block/electric_furnace.json
+4f64df9367006de79b1614457469749d69f86061 assets/fornax/models/block/electric_furnace_on.json
 51831e53e363e0184cee73d1bf099003290391c6 assets/fornax/models/block/gold_electric_furnace.json
 52dc901a7c66216521cdfca04e62d12d7e12368e assets/fornax/models/block/gold_electric_furnace_on.json
 db60c184e127e3c4623a669ec35d224fc844f1ed assets/fornax/models/block/gold_furnace.json

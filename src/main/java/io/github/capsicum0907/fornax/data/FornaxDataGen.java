@@ -176,7 +176,7 @@ public final class FornaxDataGen {
         private ModelFile overlaid(String name, boolean lit) {
             ResourceLocation side = mcLoc("block/furnace_side");
             ResourceLocation top = mcLoc("block/furnace_top");
-            ResourceLocation front = mcLoc(lit ? "block/furnace_front_on" : "block/furnace_front");
+            ResourceLocation front = side;
             var model = models().withExistingParent(name, mcLoc("block/block"))
                     .renderType("cutout")
                     .texture("particle", front)
