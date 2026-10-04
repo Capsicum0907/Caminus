@@ -3,18 +3,18 @@
 Upload in this order; the first is the card image.
 
 ## 01-card.png
-**Furnaces, lit**
+**Every furnace, lit**
 
-A vanilla furnace and Tier 1 to 6. The vanilla one and Tier 1 to 4 are smelting.
+Electric Furnaces on top and fuel furnaces below, from the plain one or Tier 1 on the left to Tier 8 on the right.
 
-バニラのかまどと Tier 1〜6 を並べたものです。バニラと Tier 1〜4 が焼いています。
+上の段が電気かまど、下の段が燃料のかまどです。左から順にティアが上がり、右端が Tier 8 です。
 
-## 02-electric.png
-**Electric Furnaces**
+## 02-idle.png
+**At rest**
 
-The plain Electric Furnace and Tier 1 to 7. The lit ones glow inside.
+The same furnaces, not smelting.
 
-電気かまどと Tier 1〜7 です。動いているものは中が赤く光ります。
+同じかまどが止まっているところです。
 
 ## 03-screen.png
 **The screen**
