@@ -1,5 +1,7 @@
 package io.github.capsicum0907.fornax.client;
 
+import com.mojang.math.Axis;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -35,6 +37,7 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     private static final int EMPTY_ARROW_U = 79;
     private static final int EMPTY_ARROW_V = 34;
     private static final int TEXTURE_SIZE = 256;
+    private static final float QUARTER_TURN = 90.0F;
     private static final int NARROW_BELOW = 379;
 
     private final SmeltingRecipeBookComponent recipeBook = new SmeltingRecipeBookComponent();
@@ -113,19 +116,29 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
             }
             graphics.blit(TEXTURE, leftPos + layout.flameX(), topPos + layout.flameY(), EMPTY_FLAME_U,
                     EMPTY_FLAME_V, Layout.FLAME, Layout.FLAME);
-            graphics.blit(TEXTURE, leftPos + layout.arrowX(), topPos + layout.arrowY(), EMPTY_ARROW_U,
-                    EMPTY_ARROW_V, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT);
             progress = menu.progress();
         }
-        int arrow = Mth.ceil(progress * Layout.ARROW_WIDTH);
-        graphics.blitSprite(ARROW, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT, 0, 0,
-                leftPos + layout.arrowX(), topPos + layout.arrowY(), arrow, Layout.ARROW_HEIGHT);
+        arrow(graphics, layout, progress);
         if (menu.burning()) {
             int flame = Mth.ceil(menu.burned() * (Layout.FLAME - 1)) + 1;
             graphics.blitSprite(FLAME, Layout.FLAME, Layout.FLAME, 0, Layout.FLAME - flame,
                     leftPos + layout.flameX(), topPos + layout.flameY() + Layout.FLAME - flame,
                     Layout.FLAME, flame);
         }
+    }
+
+    private void arrow(GuiGraphics graphics, Layout layout, float progress) {
+        int filled = Mth.ceil(progress * Layout.ARROW_WIDTH);
+        graphics.pose().pushPose();
+        if (layout.arrowDown()) {
+            graphics.pose().translate(leftPos + layout.arrowX() + Layout.ARROW_HEIGHT, topPos + layout.arrowY(), 0.0F);
+            graphics.pose().mulPose(Axis.ZP.rotationDegrees(QUARTER_TURN));
+            graphics.blit(TEXTURE, 0, 0, EMPTY_ARROW_U, EMPTY_ARROW_V, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT);
+        } else {
+            graphics.pose().translate(leftPos + layout.arrowX(), topPos + layout.arrowY(), 0.0F);
+        }
+        graphics.blitSprite(ARROW, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT, 0, 0, 0, 0, filled, Layout.ARROW_HEIGHT);
+        graphics.pose().popPose();
     }
 
     private void panel(GuiGraphics graphics) {
