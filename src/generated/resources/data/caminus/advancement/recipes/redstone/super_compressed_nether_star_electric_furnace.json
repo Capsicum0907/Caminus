@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "caminus:super_compressed_nether_star_electric_furnace"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_under": {
+      "conditions": {
+        "items": [
+          {
+            "items": "caminus:compressed_nether_star_electric_furnace"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_under"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "caminus:super_compressed_nether_star_electric_furnace"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "caminus:iron_electric_furnace"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_under": {
+      "conditions": {
+        "items": [
+          {
+            "items": "caminus:copper_electric_furnace"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_under"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "caminus:iron_electric_furnace"
+    ]
+  }
+}

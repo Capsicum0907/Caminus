@@ -1,0 +1,5 @@
+// 1.21.1	2026-10-05T01:00:49.4517232	Tags for minecraft:block mod id caminus
+97dd89b46eeeee709eb53e1820146bb085ab0e4c data/minecraft/tags/block/mineable/pickaxe.json
+194fb035807a9d138bdd97ad1d8dc32076fc3489 data/minecraft/tags/block/needs_diamond_tool.json
+3b86e4ca2c64435e89b93a2285995c4d4765bc8a data/minecraft/tags/block/needs_iron_tool.json
+3ca691ba8d86ce0e8eb55cf4414aa3826c52d61a data/minecraft/tags/block/needs_stone_tool.json

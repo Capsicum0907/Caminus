@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "item": "minecraft:coal_block"
+    },
+    "F": {
+      "item": "caminus:copper_furnace"
+    },
+    "M": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "MMM",
+    "MFM",
+    "MCM"
+  ],
+  "result": {
+    "count": 1,
+    "id": "caminus:iron_furnace"
+  }
+}

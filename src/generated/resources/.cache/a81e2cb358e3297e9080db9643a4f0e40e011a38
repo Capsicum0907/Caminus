@@ -1,5 +1,0 @@
-// 1.21.1	2026-10-05T00:15:56.3755445	Tags for minecraft:block mod id fornax
-eacd164fc52aaf49f00fad05f30a1739dcb2b43b data/minecraft/tags/block/mineable/pickaxe.json
-e08b6170d85dd6243635360e6c4a8e0015d61184 data/minecraft/tags/block/needs_diamond_tool.json
-64befbd85f9d812906c888b6063b94ffb1cbd174 data/minecraft/tags/block/needs_iron_tool.json
-441e25a028d2b956d851627214b2e05aad66c004 data/minecraft/tags/block/needs_stone_tool.json

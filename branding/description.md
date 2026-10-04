@@ -1,4 +1,4 @@
-Fornax adds furnaces in eight tiers, on fuel or on Forge Energy (FE). Each tier smelts faster and more items at once.
+Caminus adds furnaces in eight tiers, on fuel or on Forge Energy (FE). Each tier smelts faster and more items at once.
 
 ## Tiers
 
@@ -39,8 +39,8 @@ Energy goes into an Electric Furnace from any face.
 
 ## Worth knowing
 
-- Every value can be changed in `config/fornax-server.toml`.
-- `hideRecipeBook` in `config/fornax-client.toml` hides the recipe book button.
+- Every value can be changed in `config/caminus-server.toml`.
+- `hideRecipeBook` in `config/caminus-client.toml` hides the recipe book button.
 - Furnaces are mined with a pickaxe: stone for Tier 1 and 2, iron for Tier 3 and 4, diamond above.
 
 ## Requirements
@@ -49,7 +49,7 @@ NeoForge 21.1.x on Minecraft 1.21.1. MIT licensed.
 
 ---
 
-Fornax は、燃料または Forge Energy（FE）で動く8つのティアのかまどを追加します。ティアが上がるほど速く、一度に多く焼けます。
+Caminus は、燃料または Forge Energy（FE）で動く8つのティアのかまどを追加します。ティアが上がるほど速く、一度に多く焼けます。
 
 ## ティア
 
@@ -90,8 +90,8 @@ Fornax は、燃料または Forge Energy（FE）で動く8つのティアのか
 
 ## 知っておくと便利なこと
 
-- 数値はすべて `config/fornax-server.toml` で変えられます。
-- `config/fornax-client.toml` の `hideRecipeBook` でレシピ本ボタンを隠せます。
+- 数値はすべて `config/caminus-server.toml` で変えられます。
+- `config/caminus-client.toml` の `hideRecipeBook` でレシピ本ボタンを隠せます。
 - 回収にはツルハシが要ります。Tier 1・2 は石、Tier 3・4 は鉄、それ以上はダイヤモンド以上です。
 
 ## 動作環境

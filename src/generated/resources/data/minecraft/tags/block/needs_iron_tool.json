@@ -1,8 +1,8 @@
 {
   "values": [
-    "fornax:gold_furnace",
-    "fornax:diamond_furnace",
-    "fornax:gold_electric_furnace",
-    "fornax:diamond_electric_furnace"
+    "caminus:gold_furnace",
+    "caminus:diamond_furnace",
+    "caminus:gold_electric_furnace",
+    "caminus:diamond_electric_furnace"
   ]
 }

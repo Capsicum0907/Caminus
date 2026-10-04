@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "caminus:super_compressed_nether_star_electric_furnace"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "caminus:blocks/super_compressed_nether_star_electric_furnace"
+}

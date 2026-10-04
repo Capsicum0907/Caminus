@@ -1,10 +1,10 @@
-# Fornax
+# Caminus
 
 [English](README.md) | 日本語
 
 8つのティアのかまどを追加します。ティアが上がるほど速く、一度に多く焼けます。
 
-*Fornax* はラテン語で「かまど」です。
+*Caminus* はラテン語で「かまど」です。
 
 ## スクリーンショット
 
@@ -116,11 +116,11 @@ Tier 7・8（燃料・電気とも）：
 
 ## 設定
 
-`config/fornax-server.toml` でティアごとに `ticks`（1回の時間）と `batch`（1回に焼く数）を変えられます。
+`config/caminus-server.toml` でティアごとに `ticks`（1回の時間）と `batch`（1回に焼く数）を変えられます。
 `capacityBatches` は1つのスロットに何回分入るかです。
 `electric.energyPerTick` はレシピ1 tick あたりの FE、`electric.bufferTicks` は電気かまどが蓄えた分で動き続けられる長さです。
 
-`config/fornax-client.toml` の `hideRecipeBook` でレシピ本ボタンを隠せます。
+`config/caminus-client.toml` の `hideRecipeBook` でレシピ本ボタンを隠せます。
 
 ## ビルド
 

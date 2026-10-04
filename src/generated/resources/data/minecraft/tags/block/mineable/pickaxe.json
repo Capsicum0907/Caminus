@@ -1,21 +1,21 @@
 {
   "values": [
-    "fornax:copper_furnace",
-    "fornax:iron_furnace",
-    "fornax:gold_furnace",
-    "fornax:diamond_furnace",
-    "fornax:netherite_furnace",
-    "fornax:nether_star_furnace",
-    "fornax:compressed_nether_star_furnace",
-    "fornax:super_compressed_nether_star_furnace",
-    "fornax:electric_furnace",
-    "fornax:copper_electric_furnace",
-    "fornax:iron_electric_furnace",
-    "fornax:gold_electric_furnace",
-    "fornax:diamond_electric_furnace",
-    "fornax:netherite_electric_furnace",
-    "fornax:nether_star_electric_furnace",
-    "fornax:compressed_nether_star_electric_furnace",
-    "fornax:super_compressed_nether_star_electric_furnace"
+    "caminus:copper_furnace",
+    "caminus:iron_furnace",
+    "caminus:gold_furnace",
+    "caminus:diamond_furnace",
+    "caminus:netherite_furnace",
+    "caminus:nether_star_furnace",
+    "caminus:compressed_nether_star_furnace",
+    "caminus:super_compressed_nether_star_furnace",
+    "caminus:electric_furnace",
+    "caminus:copper_electric_furnace",
+    "caminus:iron_electric_furnace",
+    "caminus:gold_electric_furnace",
+    "caminus:diamond_electric_furnace",
+    "caminus:netherite_electric_furnace",
+    "caminus:nether_star_electric_furnace",
+    "caminus:compressed_nether_star_electric_furnace",
+    "caminus:super_compressed_nether_star_electric_furnace"
   ]
 }

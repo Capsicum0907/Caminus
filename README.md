@@ -1,10 +1,10 @@
-# Fornax
+# Caminus
 
 English | [日本語](README.ja.md)
 
 Furnaces in eight tiers. Each tier smelts faster and more items at once.
 
-*Fornax* is Latin for a furnace.
+*Caminus* is Latin for a furnace.
 
 ## Screenshots
 
@@ -118,12 +118,12 @@ Tier 7 and 8 (fuel and electric):
 
 ## Config
 
-`config/fornax-server.toml`, per tier: `ticks` and `batch` (items per smelt).
+`config/caminus-server.toml`, per tier: `ticks` and `batch` (items per smelt).
 `capacityBatches` sets how many smelts a slot holds.
 `electric.energyPerTick` is the FE per recipe tick, and `electric.bufferTicks` sets how long an
 electric furnace can run on what it stores.
 
-`config/fornax-client.toml`: `hideRecipeBook` hides the recipe book button.
+`config/caminus-client.toml`: `hideRecipeBook` hides the recipe book button.
 
 ## Build
 

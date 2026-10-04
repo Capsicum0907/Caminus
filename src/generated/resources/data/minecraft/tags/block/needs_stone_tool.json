@@ -1,8 +1,8 @@
 {
   "values": [
-    "fornax:copper_furnace",
-    "fornax:iron_furnace",
-    "fornax:copper_electric_furnace",
-    "fornax:iron_electric_furnace"
+    "caminus:copper_furnace",
+    "caminus:iron_furnace",
+    "caminus:copper_electric_furnace",
+    "caminus:iron_electric_furnace"
   ]
 }
