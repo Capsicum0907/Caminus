@@ -48,7 +48,7 @@ public class Fornax {
         if (side == Direction.DOWN) {
             return furnace.outputView();
         }
-        if (side == Direction.UP || side == null || furnace.fuel() == null) {
+        if (side == Direction.UP || side == null) {
             return furnace.inputView();
         }
         return furnace.fuel();

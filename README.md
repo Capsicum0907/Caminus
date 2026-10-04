@@ -45,7 +45,7 @@ fuel furnaces, plus a plain Electric Furnace with the speed of a vanilla furnace
 
 - Each item costs 20 FE per tick of its recipe: 4,000 FE for a recipe that takes 200 ticks.
 - Energy can come in from any face.
-- The sides take items to smelt, like the top.
+- The sides take energy only. Items to smelt go in from the top, as with the fuel furnaces.
 
 | Furnace | Stores (FE) |
 |---|---:|
@@ -64,6 +64,15 @@ A slot holds two smelts' worth of items, or one stack, whichever is more.
 | Top | Items to smelt. Spread to the emptiest slot |
 | Sides | Fuel |
 | Bottom | Smelted items, and empty buckets left by lava |
+
+## Mining
+
+| Tier | Pickaxe |
+|---|---|
+| Electric Furnace | Any |
+| 1, 2 | Stone or better |
+| 3, 4 | Iron or better |
+| 5 to 8 | Diamond or better |
 
 ## Recipes
 

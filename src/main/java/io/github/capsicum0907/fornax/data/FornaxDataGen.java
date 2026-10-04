@@ -26,6 +26,7 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
@@ -271,6 +272,20 @@ public final class FornaxDataGen {
         protected void addTags(HolderLookup.Provider registries) {
             var pickaxe = tag(BlockTags.MINEABLE_WITH_PICKAXE);
             ours().forEach(pickaxe::add);
+            for (Rung rung : Rung.all()) {
+                if (!rung.vanilla()) {
+                    tag(tool(rung.tier())).add(FornaxRegistry.block(rung).get());
+                }
+            }
+        }
+
+        private static TagKey<Block> tool(Tier tier) {
+            return switch (tier) {
+                case COPPER, IRON -> BlockTags.NEEDS_STONE_TOOL;
+                case GOLD, DIAMOND -> BlockTags.NEEDS_IRON_TOOL;
+                case NETHERITE, NETHER_STAR, COMPRESSED_NETHER_STAR, SUPER_COMPRESSED_NETHER_STAR ->
+                        BlockTags.NEEDS_DIAMOND_TOOL;
+            };
         }
     }
 

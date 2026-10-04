@@ -7,6 +7,7 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -279,8 +280,8 @@ public final class FornaxTests {
     public static void anElectricFurnaceHasNoFuelSlot(GameTestHelper helper) {
         FurnaceBlockEntity furnace = placeElectric(helper, Tier.COPPER);
         check(furnace.fuel() == null, "there is nowhere to put fuel");
-        ItemStack left = face(helper, Direction.NORTH).insertItem(0, new ItemStack(Items.RAW_IRON), false);
-        check(left.isEmpty() && furnace.inputs().getStackInSlot(0).getCount() == 1, "the sides feed the input");
+        check(face(helper, Direction.NORTH) == null, "so the sides take energy and no items");
+        check(face(helper, Direction.UP) != null, "while the top still takes things to smelt");
         helper.succeed();
     }
 
@@ -311,5 +312,17 @@ public final class FornaxTests {
             check(!furnace.getBlockState().getValue(FurnaceBlock.LIT), "and the furnace has gone out");
             helper.succeed();
         });
+    }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void higherTiersNeedBetterPickaxes(GameTestHelper helper) {
+        check(FornaxRegistry.furnace(Tier.IRON).get().defaultBlockState().is(BlockTags.NEEDS_STONE_TOOL), "iron needs stone");
+        check(FornaxRegistry.furnace(Tier.GOLD).get().defaultBlockState().is(BlockTags.NEEDS_IRON_TOOL), "gold needs iron");
+        check(FornaxRegistry.electric(Tier.NETHERITE).get().defaultBlockState().is(BlockTags.NEEDS_DIAMOND_TOOL),
+                "netherite needs diamond");
+        var vanilla = FornaxRegistry.electric(null).get().defaultBlockState();
+        check(!vanilla.is(BlockTags.NEEDS_STONE_TOOL) && !vanilla.is(BlockTags.NEEDS_IRON_TOOL)
+                && !vanilla.is(BlockTags.NEEDS_DIAMOND_TOOL), "the plain electric furnace needs any pickaxe");
+        helper.succeed();
     }
 }

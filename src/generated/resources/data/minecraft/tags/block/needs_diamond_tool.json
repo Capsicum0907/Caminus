@@ -1,0 +1,12 @@
+{
+  "values": [
+    "fornax:netherite_furnace",
+    "fornax:nether_star_furnace",
+    "fornax:compressed_nether_star_furnace",
+    "fornax:super_compressed_nether_star_furnace",
+    "fornax:netherite_electric_furnace",
+    "fornax:nether_star_electric_furnace",
+    "fornax:compressed_nether_star_electric_furnace",
+    "fornax:super_compressed_nether_star_electric_furnace"
+  ]
+}
