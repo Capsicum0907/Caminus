@@ -23,7 +23,18 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
             ResourceLocation.withDefaultNamespace("container/furnace/lit_progress");
     private static final ResourceLocation ARROW =
             ResourceLocation.withDefaultNamespace("container/furnace/burn_progress");
-    private static final float ABOVE_ITEMS = 300.0F;
+    private static final int CORNER = 4;
+    private static final int RIGHT_EDGE_U = 172;
+    private static final int BOTTOM_EDGE_V = 162;
+    private static final int FILL_U = 8;
+    private static final int FILL_V = 10;
+    private static final int SLOT_FRAME_U = 55;
+    private static final int SLOT_FRAME_V = 16;
+    private static final int EMPTY_FLAME_U = 56;
+    private static final int EMPTY_FLAME_V = 36;
+    private static final int EMPTY_ARROW_U = 79;
+    private static final int EMPTY_ARROW_V = 34;
+    private static final int TEXTURE_SIZE = 256;
     private static final int NARROW_BELOW = 379;
     private static final int BOOK_BUTTON_X = 20;
     private static final int BOOK_BUTTON_ABOVE_MIDDLE = 49;
@@ -37,7 +48,7 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     public FurnaceScreen(FurnaceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         Layout layout = menu.layout();
-        this.imageWidth = Layout.WIDTH;
+        this.imageWidth = layout.width();
         this.imageHeight = layout.height();
         this.inventoryLabelY = layout.inventoryLabelY();
     }
@@ -91,17 +102,25 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         Layout layout = menu.layout();
+        float progress;
         if (layout.vanilla()) {
             graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
-            int arrow = Mth.ceil(menu.progress(0) * Layout.ARROW_WIDTH);
-            graphics.blitSprite(ARROW, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT, 0, 0,
-                    leftPos + layout.arrowX(), topPos + layout.arrowY(), arrow, Layout.ARROW_HEIGHT);
+            progress = menu.progress(0);
         } else {
-            panel(graphics, leftPos, topPos, imageWidth, imageHeight);
+            panel(graphics);
             for (Slot slot : menu.slots) {
-                well(graphics, leftPos + slot.x - 1, topPos + slot.y - 1);
+                graphics.blit(TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1, SLOT_FRAME_U, SLOT_FRAME_V,
+                        Layout.SLOT, Layout.SLOT);
             }
+            graphics.blit(TEXTURE, leftPos + layout.flameX(), topPos + layout.flameY(), EMPTY_FLAME_U,
+                    EMPTY_FLAME_V, Layout.FLAME, Layout.FLAME);
+            graphics.blit(TEXTURE, leftPos + layout.arrowX(), topPos + layout.arrowY(), EMPTY_ARROW_U,
+                    EMPTY_ARROW_V, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT);
+            progress = menu.progress();
         }
+        int arrow = Mth.ceil(progress * Layout.ARROW_WIDTH);
+        graphics.blitSprite(ARROW, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT, 0, 0,
+                leftPos + layout.arrowX(), topPos + layout.arrowY(), arrow, Layout.ARROW_HEIGHT);
         if (menu.burning()) {
             int flame = Mth.ceil(menu.burned() * (Layout.FLAME - 1)) + 1;
             graphics.blitSprite(FLAME, Layout.FLAME, Layout.FLAME, 0, Layout.FLAME - flame,
@@ -110,25 +129,27 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
         }
     }
 
-    @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        super.renderLabels(graphics, mouseX, mouseY);
-        Layout layout = menu.layout();
-        if (layout.vanilla()) {
-            return;
-        }
-        graphics.pose().pushPose();
-        graphics.pose().translate(0.0F, 0.0F, ABOVE_ITEMS);
-        for (int line = 0; line < menu.lines(); line++) {
-            int x = layout.inputX(line);
-            int y = layout.inputY(line) + Layout.SLOT - 2;
-            int filled = Math.round((Layout.SLOT - 2) * menu.progress(line));
-            graphics.fill(x, y - Layout.BAR, x + Layout.SLOT - 2, y, Palette.PROGRESS_BACK);
-            if (filled > 0) {
-                graphics.fill(x, y - Layout.BAR, x + filled, y, Palette.PROGRESS);
-            }
-        }
-        graphics.pose().popPose();
+    private void panel(GuiGraphics graphics) {
+        int x = leftPos;
+        int y = topPos;
+        int innerWidth = imageWidth - CORNER * 2;
+        int innerHeight = imageHeight - CORNER * 2;
+        int right = x + imageWidth - CORNER;
+        int bottom = y + imageHeight - CORNER;
+        graphics.blit(TEXTURE, x, y, 0, 0, CORNER, CORNER);
+        graphics.blit(TEXTURE, right, y, RIGHT_EDGE_U, 0, CORNER, CORNER);
+        graphics.blit(TEXTURE, x, bottom, 0, BOTTOM_EDGE_V, CORNER, CORNER);
+        graphics.blit(TEXTURE, right, bottom, RIGHT_EDGE_U, BOTTOM_EDGE_V, CORNER, CORNER);
+        stretch(graphics, x + CORNER, y, innerWidth, CORNER, FILL_U, 0, 1, CORNER);
+        stretch(graphics, x + CORNER, bottom, innerWidth, CORNER, FILL_U, BOTTOM_EDGE_V, 1, CORNER);
+        stretch(graphics, x, y + CORNER, CORNER, innerHeight, 0, FILL_V, CORNER, 1);
+        stretch(graphics, right, y + CORNER, CORNER, innerHeight, RIGHT_EDGE_U, FILL_V, CORNER, 1);
+        stretch(graphics, x + CORNER, y + CORNER, innerWidth, innerHeight, FILL_U, FILL_V, 1, 1);
+    }
+
+    private static void stretch(GuiGraphics graphics, int x, int y, int width, int height, int u, int v,
+            int uWidth, int vHeight) {
+        graphics.blit(TEXTURE, x, y, width, height, u, v, uWidth, vHeight, TEXTURE_SIZE, TEXTURE_SIZE);
     }
 
     @Override
@@ -182,19 +203,5 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     @Override
     public RecipeBookComponent getRecipeBookComponent() {
         return recipeBook;
-    }
-
-    private static void panel(GuiGraphics graphics, int x, int y, int width, int height) {
-        graphics.fill(x, y, x + width, y + height, Palette.OUTLINE);
-        graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, Palette.PANEL_LIGHT);
-        graphics.fill(x + 3, y + 3, x + width - 1, y + height - 1, Palette.PANEL_DARK);
-        graphics.fill(x + 3, y + 3, x + width - 3, y + height - 3, Palette.PANEL);
-    }
-
-    private static void well(GuiGraphics graphics, int x, int y) {
-        int size = Layout.SLOT;
-        graphics.fill(x, y, x + size, y + size, Palette.WELL_LIGHT);
-        graphics.fill(x, y, x + size - 1, y + size - 1, Palette.WELL_SHADOW);
-        graphics.fill(x + 1, y + 1, x + size - 1, y + size - 1, Palette.WELL);
     }
 }

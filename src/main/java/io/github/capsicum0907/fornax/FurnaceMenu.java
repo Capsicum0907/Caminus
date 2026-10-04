@@ -69,11 +69,11 @@ public class FurnaceMenu extends RecipeBookMenu<SingleRecipeInput, AbstractCooki
         for (int row = 0; row < Layout.INVENTORY_ROWS; row++) {
             for (int column = 0; column < Layout.INVENTORY_COLUMNS; column++) {
                 addSlot(new Slot(inventory, column + row * Layout.INVENTORY_COLUMNS + Layout.INVENTORY_COLUMNS,
-                        Layout.INVENTORY_X + column * Layout.SLOT, layout.inventoryY() + row * Layout.SLOT));
+                        layout.inventoryX() + column * Layout.SLOT, layout.inventoryY() + row * Layout.SLOT));
             }
         }
         for (int column = 0; column < Layout.INVENTORY_COLUMNS; column++) {
-            addSlot(new Slot(inventory, column, Layout.INVENTORY_X + column * Layout.SLOT, layout.hotbarY()));
+            addSlot(new Slot(inventory, column, layout.inventoryX() + column * Layout.SLOT, layout.hotbarY()));
         }
         addDataSlots(this.data);
     }
@@ -137,6 +137,14 @@ public class FurnaceMenu extends RecipeBookMenu<SingleRecipeInput, AbstractCooki
 
     public float progress(int line) {
         return FurnaceData.progress(data, line);
+    }
+
+    public float progress() {
+        float sum = 0.0F;
+        for (int line = 0; line < lines; line++) {
+            sum += progress(line);
+        }
+        return sum / lines;
     }
 
     private boolean smeltable(ItemStack stack) {
