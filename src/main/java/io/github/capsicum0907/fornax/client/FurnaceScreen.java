@@ -4,6 +4,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
@@ -11,8 +12,12 @@ import io.github.capsicum0907.fornax.FurnaceMenu;
 import io.github.capsicum0907.fornax.Layout;
 
 public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> {
+    private static final ResourceLocation TEXTURE =
+            ResourceLocation.withDefaultNamespace("textures/gui/container/furnace.png");
     private static final ResourceLocation FLAME =
             ResourceLocation.withDefaultNamespace("container/furnace/lit_progress");
+    private static final ResourceLocation ARROW =
+            ResourceLocation.withDefaultNamespace("container/furnace/burn_progress");
     private static final float ABOVE_ITEMS = 300.0F;
 
     public FurnaceScreen(FurnaceMenu menu, Inventory inventory, Component title) {
@@ -24,14 +29,27 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> {
     }
 
     @Override
+    protected void init() {
+        super.init();
+        this.titleLabelX = (imageWidth - font.width(title)) / 2;
+    }
+
+    @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        panel(graphics, leftPos, topPos, imageWidth, imageHeight);
-        for (Slot slot : menu.slots) {
-            well(graphics, leftPos + slot.x - 1, topPos + slot.y - 1);
-        }
         Layout layout = menu.layout();
+        if (layout.vanilla()) {
+            graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+            int arrow = Mth.ceil(menu.progress(0) * Layout.ARROW_WIDTH);
+            graphics.blitSprite(ARROW, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT, 0, 0,
+                    leftPos + layout.arrowX(), topPos + layout.arrowY(), arrow, Layout.ARROW_HEIGHT);
+        } else {
+            panel(graphics, leftPos, topPos, imageWidth, imageHeight);
+            for (Slot slot : menu.slots) {
+                well(graphics, leftPos + slot.x - 1, topPos + slot.y - 1);
+            }
+        }
         if (menu.burning()) {
-            int flame = Math.max(1, Math.round(Layout.FLAME * menu.burned()));
+            int flame = Mth.ceil(menu.burned() * (Layout.FLAME - 1)) + 1;
             graphics.blitSprite(FLAME, Layout.FLAME, Layout.FLAME, 0, Layout.FLAME - flame,
                     leftPos + layout.flameX(), topPos + layout.flameY() + Layout.FLAME - flame,
                     Layout.FLAME, flame);
@@ -42,6 +60,9 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> {
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         super.renderLabels(graphics, mouseX, mouseY);
         Layout layout = menu.layout();
+        if (layout.vanilla()) {
+            return;
+        }
         graphics.pose().pushPose();
         graphics.pose().translate(0.0F, 0.0F, ABOVE_ITEMS);
         for (int line = 0; line < menu.lines(); line++) {
