@@ -7,6 +7,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
@@ -38,6 +42,11 @@ public class FurnaceBlock extends BaseEntityBlock {
                     Tier.CODEC.optionalFieldOf("tier").forGetter(block -> Optional.ofNullable(block.rung().tier())),
                     propertiesCodec())
                     .apply(instance, (kind, tier, properties) -> new FurnaceBlock(new Rung(kind, tier.orElse(null)), properties)));
+
+    private static final double CRACKLE_CHANCE = 0.1;
+    private static final double FACE_OFFSET = 0.52;
+    private static final double SPREAD = 0.6;
+    private static final double MOUTH_HEIGHT = 6.0 / 16.0;
 
     private final Rung rung;
 
@@ -104,6 +113,26 @@ public class FurnaceBlock extends BaseEntityBlock {
             level.updateNeighbourForOutputSignal(pos, this);
         }
         super.onRemove(state, level, pos, now, moved);
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (rung.kind() != Kind.FUEL || !state.getValue(LIT)) {
+            return;
+        }
+        double x = pos.getX() + 0.5;
+        double y = pos.getY();
+        double z = pos.getZ() + 0.5;
+        if (random.nextDouble() < CRACKLE_CHANCE) {
+            level.playLocalSound(x, y, z, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+        }
+        Direction facing = state.getValue(FACING);
+        double along = random.nextDouble() * SPREAD - SPREAD / 2;
+        double dx = facing.getAxis() == Direction.Axis.X ? facing.getStepX() * FACE_OFFSET : along;
+        double dy = random.nextDouble() * MOUTH_HEIGHT;
+        double dz = facing.getAxis() == Direction.Axis.Z ? facing.getStepZ() * FACE_OFFSET : along;
+        level.addParticle(ParticleTypes.SMOKE, x + dx, y + dy, z + dz, 0.0, 0.0, 0.0);
+        level.addParticle(ParticleTypes.FLAME, x + dx, y + dy, z + dz, 0.0, 0.0, 0.0);
     }
 
     @Override
