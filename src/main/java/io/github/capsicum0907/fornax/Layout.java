@@ -28,7 +28,8 @@ public final class Layout {
     private static final int VANILLA_BOOK_X = 20;
     private static final int VANILLA_BOOK_ABOVE_MIDDLE = 49;
 
-    private static final int INVENTORY_X = 8;
+    private static final int EDGE = 7;
+    private static final int COLUMN_GAP = 4;
     private static final int FRAME_TOP = 16;
     private static final int PER_ROW = 8;
     private static final int ARROW_GAP = 2;
@@ -41,15 +42,21 @@ public final class Layout {
     private final boolean vanilla;
     private final int perRow;
     private final int rows;
-    private final int column;
+    private final int width;
+    private final int inventoryFrame;
+    private final int slotsLeft;
 
     public Layout(int lines) {
         this.lines = lines;
         this.vanilla = lines == 1;
         this.perRow = Math.min(lines, PER_ROW);
         this.rows = (lines + perRow - 1) / perRow;
-        int columns = perRow + 1;
-        this.column = INVENTORY_X - 1 + (INVENTORY_COLUMNS - columns) / 2 * SLOT;
+        int blockColumn = (INVENTORY_COLUMNS - (perRow + 1)) / 2 + 1;
+        int sideRoom = EDGE + (blockColumn - 1) * SLOT;
+        int widen = vanilla ? 0 : Math.max(0, EDGE + COLUMN_GAP - sideRoom);
+        this.width = WIDTH + widen * 2;
+        this.inventoryFrame = (width - INVENTORY_COLUMNS * SLOT) / 2;
+        this.slotsLeft = inventoryFrame + blockColumn * SLOT;
     }
 
     public int lines() {
@@ -61,11 +68,15 @@ public final class Layout {
     }
 
     public int width() {
-        return WIDTH;
+        return width;
     }
 
     private int slotsLeft() {
-        return column + SLOT;
+        return slotsLeft;
+    }
+
+    private int column() {
+        return slotsLeft - COLUMN_GAP - SLOT;
     }
 
     private int outputsTop() {
@@ -73,11 +84,12 @@ public final class Layout {
     }
 
     public int bookX() {
-        return vanilla ? VANILLA_BOOK_X : column - (BOOK_WIDTH - SLOT);
+        return vanilla ? VANILLA_BOOK_X : column() - (BOOK_WIDTH - SLOT);
     }
 
     public int bookY(int screenHeight, int top) {
-        return vanilla ? screenHeight / 2 - VANILLA_BOOK_ABOVE_MIDDLE : top + FRAME_TOP;
+        return vanilla ? screenHeight / 2 - VANILLA_BOOK_ABOVE_MIDDLE
+                : top + FRAME_TOP + (rows * SLOT - BOOK_HEIGHT) / 2;
     }
 
     public int inputX(int line) {
@@ -109,7 +121,7 @@ public final class Layout {
     }
 
     public int fuelX() {
-        return vanilla ? VANILLA_FUEL_X : column + 1;
+        return vanilla ? VANILLA_FUEL_X : column() + 1;
     }
 
     public int fuelY() {
@@ -117,7 +129,7 @@ public final class Layout {
     }
 
     public int flameX() {
-        return vanilla ? VANILLA_FLAME_X : column + (SLOT - FLAME) / 2;
+        return vanilla ? VANILLA_FLAME_X : column() + (SLOT - FLAME) / 2;
     }
 
     public int flameY() {
@@ -133,7 +145,7 @@ public final class Layout {
     }
 
     public int inventoryX() {
-        return INVENTORY_X;
+        return inventoryFrame + 1;
     }
 
     public int inventoryY() {
