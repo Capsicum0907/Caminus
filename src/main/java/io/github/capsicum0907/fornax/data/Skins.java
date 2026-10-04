@@ -13,8 +13,6 @@ public final class Skins {
     private static final int OPAQUE = 0xFF000000;
     private static final int SHINE = 0xFFFFFF;
     private static final int PATINA = 0x4FA88A;
-    private static final int REDSTONE_DIM = 0x4A120F;
-    private static final int REDSTONE_LIT = 0xFF5A3C;
     private static final int COIL_CORE = 0xFF8A3C;
     private static final int COIL_EDGE = 0x9A2A1C;
     private static final int COIL_COLD = 0x4A3C3A;
@@ -22,9 +20,6 @@ public final class Skins {
     private static final int GLOW_CORE = 0x5C1C12;
     private static final int GLOW_EDGE = 0x24100C;
     private static final int[] COIL_ROWS = { 1, 3 };
-    private static final int LAMP_X = 13;
-    private static final int LAMP_Y = 8;
-    private static final float LAMP_SHADE = 0.7F;
     private static final int CLEAR = 0x00000000;
     public static final String OVERLAY = "electric_furnace_overlay";
 
@@ -134,8 +129,6 @@ public final class Skins {
                 }
             }
         }
-        pixels[LAMP_Y][LAMP_X] = OPAQUE | (lit ? REDSTONE_LIT : REDSTONE_DIM);
-        pixels[LAMP_Y + 1][LAMP_X] = OPAQUE | scale(lit ? REDSTONE_LIT : REDSTONE_DIM, LAMP_SHADE);
     }
 
     private static float centred(int x, int half) {
