@@ -1,10 +1,13 @@
 # Fornax
 
-A furnace that is faster, and smelts more than one thing at once.
+English | [日本語](README.ja.md)
+
+Furnaces in eight tiers. Each tier smelts faster and more items at once.
 
 *Fornax* is Latin for a furnace.
 
-> **Status: scaffold only.** The mod loads and does nothing.
+> **Status: in development.** The blocks are only in the creative tab. Tier 1 to 6 have no
+> recipe yet.
 
 ## Target
 
@@ -14,29 +17,50 @@ A furnace that is faster, and smelts more than one thing at once.
 | Loader | NeoForge 21.1.248 |
 | Java | 21 |
 
-1.21.1 is the version large tech mods stayed on, so it is where this mod is useful.
+## Tiers
 
-## Design
+| Tier | Material | Ticks per smelt | Items per smelt | Slots | Items per second |
+|---|---|---|---|---|---|
+| — | Vanilla furnace | 200 | 1 | 1 | 0.1 |
+| 1 | Copper | 83 | 2 | 1 | 0.48 |
+| 2 | Iron | 34 | 4 | 1 | 2.4 |
+| 3 | Gold | 14 | 8 | 1 | 11 |
+| 4 | Diamond | 6 | 16 | 1 | 53 |
+| 5 | Netherite | 2 | 32 | 1 | 320 |
+| 6 | Nether Star | 1 | 64 | 1 | 1,280 |
+| 7 | Compressed Nether Star | 1 | 128 | 4 | 10,240 |
+| 8 | Super Compressed Nether Star | 1 | 256 | 16 | 81,920 |
 
-A furnace that smelts several things at once, each faster than the vanilla one.
+Ticks per smelt are for a recipe that takes 200 ticks in a vanilla furnace. Other recipes
+take proportionally longer or shorter.
 
-**Several lines, not one clever one.** Multiple slots could mean a shared buffer
-feeding a parallel process, or simply *n* independent furnaces sharing a housing.
-This is the second. Both the implementation and what the player sees stay simple,
-and simple is what survives being changed later.
+## Fuel
 
-**Speed is a factor on ticks per item, and fuel moves with it.** If a faster
-furnace burned the same coal for the same number of items, the upgrade would
-quietly be a fuel-efficiency upgrade as well, which is a different thing and a
-larger one. What is bought here is time.
+Each item costs the same fuel as in a vanilla furnace. One coal smelts 8 items in every tier.
 
-The one thing worth being careful about is the recipe lookup: asking the recipe
-manager for a match every tick means walking every smelting recipe every tick.
-The game provides a cached check for exactly this, and it is used.
+## Slots
 
-No dependency on [Accumulator](https://github.com/Capsicum0907/Accumulator). If
-running on Forge Energy is ever wanted, it arrives later as an optional dependency
-— tying the two together at the start would mean neither stands alone.
+A slot holds two smelts' worth of items, or one stack, whichever is more.
+
+## Hoppers and pipes
+
+| Face | |
+|---|---|
+| Top | Items to smelt. Spread to the emptiest slot |
+| Sides | Fuel |
+| Bottom | Smelted items, and empty buckets left by lava |
+
+## Recipes
+
+| Tier | Recipe |
+|---|---|
+| 7 | 8 × Tier 6 around a Ghast Tear |
+| 8 | 8 × Tier 7 around a Totem of Undying |
+
+## Config
+
+`serverconfig/fornax-server.toml`, per tier: `ticks` and `batch` (items per smelt).
+`capacityBatches` sets how many smelts a slot holds.
 
 ## Build
 
@@ -44,28 +68,11 @@ running on Forge Energy is ever wanted, it arrives later as an optional dependen
 run.bat                   # compile and launch a dev client - double-clickable
 gradlew build             # produce the jar
 gradlew runGameTestServer # run every game test, headless, then exit
-gradlew runData           # regenerate models, recipes and language
+gradlew runData           # regenerate models, textures, recipes and language
 ```
 
 `JAVA_HOME` must point at a JDK 21, or `java` must be on `PATH`.
 
-## Roadmap
-
-- [x] **0** — scaffold; the mod loads
-- [ ] **1** — the feature above, in a form that can be watched
-- [ ] **2** — checked by game tests rather than by eye
-
-## Related
-
-One of a set of small, independent mods, each doing one thing and depending on
-none of the others: [Fodina](https://github.com/Capsicum0907/Fodina),
-[Trivium](https://github.com/Capsicum0907/Trivium),
-[Magnes](https://github.com/Capsicum0907/Magnes),
-[Cella](https://github.com/Capsicum0907/Cella),
-[Acervus](https://github.com/Capsicum0907/Acervus),
-[Fornax](https://github.com/Capsicum0907/Fornax),
-[Accumulator](https://github.com/Capsicum0907/Accumulator).
-
 ## License
 
-Not decided yet. Until it is, the metadata says All Rights Reserved.
+MIT. See [LICENSE](LICENSE).

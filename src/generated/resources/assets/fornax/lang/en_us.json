@@ -1,0 +1,11 @@
+{
+  "block.fornax.compressed_nether_star_furnace": "Furnace (Tier 7)",
+  "block.fornax.copper_furnace": "Furnace (Tier 1)",
+  "block.fornax.diamond_furnace": "Furnace (Tier 4)",
+  "block.fornax.gold_furnace": "Furnace (Tier 3)",
+  "block.fornax.iron_furnace": "Furnace (Tier 2)",
+  "block.fornax.nether_star_furnace": "Furnace (Tier 6)",
+  "block.fornax.netherite_furnace": "Furnace (Tier 5)",
+  "block.fornax.super_compressed_nether_star_furnace": "Furnace (Tier 8)",
+  "itemGroup.fornax": "Fornax"
+}

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "fornax:block/super_compressed_nether_star_furnace_top",
+    "front": "fornax:block/super_compressed_nether_star_furnace_front",
+    "side": "fornax:block/super_compressed_nether_star_furnace_side",
+    "top": "fornax:block/super_compressed_nether_star_furnace_top"
+  }
+}

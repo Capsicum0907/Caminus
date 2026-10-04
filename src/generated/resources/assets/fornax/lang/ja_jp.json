@@ -1,0 +1,11 @@
+{
+  "block.fornax.compressed_nether_star_furnace": "かまど (Tier 7)",
+  "block.fornax.copper_furnace": "かまど (Tier 1)",
+  "block.fornax.diamond_furnace": "かまど (Tier 4)",
+  "block.fornax.gold_furnace": "かまど (Tier 3)",
+  "block.fornax.iron_furnace": "かまど (Tier 2)",
+  "block.fornax.nether_star_furnace": "かまど (Tier 6)",
+  "block.fornax.netherite_furnace": "かまど (Tier 5)",
+  "block.fornax.super_compressed_nether_star_furnace": "かまど (Tier 8)",
+  "itemGroup.fornax": "Fornax"
+}

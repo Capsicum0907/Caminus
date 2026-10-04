@@ -1,0 +1,9 @@
+// 1.21.1	2026-10-04T19:08:56.3633242	Loot Tables
+49f808888d443870318a91677b604d0eb6fc8d7e data/fornax/loot_table/blocks/compressed_nether_star_furnace.json
+8840e9e2831f4b443ebf706c26f73bedb5237115 data/fornax/loot_table/blocks/copper_furnace.json
+35a3da1e86f7aa6aaf88af4bea025f16938cf6f1 data/fornax/loot_table/blocks/diamond_furnace.json
+9e8665ef6452df68ef624c0c41463479cb4e3ada data/fornax/loot_table/blocks/gold_furnace.json
+ee523d669dbf7a96981104b564d4cb3ab0c2c18f data/fornax/loot_table/blocks/iron_furnace.json
+ae723fe6d899b0f972b8af86519b0848b2ac7112 data/fornax/loot_table/blocks/netherite_furnace.json
+16153ae519178bd9a5d542fba6034f8c7b03b3b3 data/fornax/loot_table/blocks/nether_star_furnace.json
+a97f186f34f26c72719312910cafac6b1aa0efdc data/fornax/loot_table/blocks/super_compressed_nether_star_furnace.json

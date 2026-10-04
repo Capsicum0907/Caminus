@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "fornax:block/gold_furnace_top",
+    "front": "fornax:block/gold_furnace_front",
+    "side": "fornax:block/gold_furnace_side",
+    "top": "fornax:block/gold_furnace_top"
+  }
+}

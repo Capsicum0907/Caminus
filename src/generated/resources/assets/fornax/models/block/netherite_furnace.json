@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "fornax:block/netherite_furnace_top",
+    "front": "fornax:block/netherite_furnace_front",
+    "side": "fornax:block/netherite_furnace_side",
+    "top": "fornax:block/netherite_furnace_top"
+  }
+}

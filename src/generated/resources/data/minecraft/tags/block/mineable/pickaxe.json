@@ -1,0 +1,12 @@
+{
+  "values": [
+    "fornax:copper_furnace",
+    "fornax:iron_furnace",
+    "fornax:gold_furnace",
+    "fornax:diamond_furnace",
+    "fornax:netherite_furnace",
+    "fornax:nether_star_furnace",
+    "fornax:compressed_nether_star_furnace",
+    "fornax:super_compressed_nether_star_furnace"
+  ]
+}
