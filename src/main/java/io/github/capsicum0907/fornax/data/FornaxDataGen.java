@@ -334,11 +334,10 @@ public final class FornaxDataGen {
         private void laddered(RecipeOutput output, Rung rung) {
             ItemLike under = under(rung);
             ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.block(rung).get())
-                    .pattern("MSM")
+                    .pattern("MMM")
                     .pattern("MFM")
                     .pattern("MCM")
                     .define('M', material(rung.tier()))
-                    .define('S', Items.SUGAR)
                     .define('F', under)
                     .define('C', core(rung.kind()))
                     .unlockedBy("has_under", has(under))

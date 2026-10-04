@@ -10,13 +10,10 @@
     },
     "M": {
       "item": "minecraft:gold_ingot"
-    },
-    "S": {
-      "item": "minecraft:sugar"
     }
   },
   "pattern": [
-    "MSM",
+    "MMM",
     "MFM",
     "MCM"
   ],

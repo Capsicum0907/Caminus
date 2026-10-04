@@ -6,8 +6,6 @@ Furnaces in eight tiers. Each tier smelts faster and more items at once.
 
 *Fornax* is Latin for a furnace.
 
-> **Status: in development.**
-
 ## Target
 
 | | |
@@ -89,12 +87,12 @@ C: Cobblestone. F: Furnace. R: Block of Redstone.
 Tier 1 to 6 (fuel and electric):
 
 ```
-M S M
+M M M
 M F M
 M C M
 ```
 
-M: the tier's material. S: Sugar. F: the furnace one tier below, of the same kind (for Tier 1: a vanilla Furnace, or the Electric Furnace). C: Block of Coal for fuel furnaces, Block of Redstone for electric ones.
+M: the tier's material. F: the furnace one tier below, of the same kind (for Tier 1: a vanilla Furnace, or the Electric Furnace). C: Block of Coal for fuel furnaces, Block of Redstone for electric ones.
 
 | Tier | Material |
 |---|---|
