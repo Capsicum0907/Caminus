@@ -15,8 +15,12 @@ public final class Skins {
     private static final int PATINA = 0x4FA88A;
     private static final int REDSTONE_DIM = 0x4A120F;
     private static final int REDSTONE_LIT = 0xFF5A3C;
-    private static final int COIL_HOT = 0xFFC896;
-    private static final int HOT_EVERY = 3;
+    private static final int COIL_CORE = 0xFF8A3C;
+    private static final int COIL_EDGE = 0x9A2A1C;
+    private static final int COIL_COLD = 0x4A3C3A;
+    private static final int COIL_COLD_EDGE = 0x2C2322;
+    private static final int GLOW_CORE = 0x5C1C12;
+    private static final int GLOW_EDGE = 0x24100C;
     private static final int[] COIL_ROWS = { 1, 3 };
     private static final int LAMP_X = 13;
     private static final int LAMP_Y = 8;
@@ -113,12 +117,39 @@ public final class Skins {
             int y = LOWER_ARCH + row;
             int half = OPENING_HALF_WIDTHS[row];
             for (int x = SIZE / 2 - half; x <= SIZE / 2 - 1 + half; x++) {
-                int colour = lit ? ((x + y) % HOT_EVERY == 0 ? COIL_HOT : REDSTONE_LIT) : REDSTONE_DIM;
-                pixels[y][x] = OPAQUE | colour;
+                float heat = centred(x, half);
+                pixels[y][x] = OPAQUE | (lit ? mix(COIL_EDGE, COIL_CORE, heat) : mix(COIL_COLD_EDGE, COIL_COLD, heat));
+                if (!lit) {
+                    continue;
+                }
+                for (int glow : new int[] { y - 1, y + 1 }) {
+                    int glowRow = glow - LOWER_ARCH;
+                    if (glowRow < 0 || glowRow >= OPENING_HALF_WIDTHS.length || isCoil(glowRow)) {
+                        continue;
+                    }
+                    int glowHalf = OPENING_HALF_WIDTHS[glowRow];
+                    if (x >= SIZE / 2 - glowHalf && x <= SIZE / 2 - 1 + glowHalf) {
+                        pixels[glow][x] = OPAQUE | mix(GLOW_EDGE, GLOW_CORE, heat);
+                    }
+                }
             }
         }
         pixels[LAMP_Y][LAMP_X] = OPAQUE | (lit ? REDSTONE_LIT : REDSTONE_DIM);
         pixels[LAMP_Y + 1][LAMP_X] = OPAQUE | scale(lit ? REDSTONE_LIT : REDSTONE_DIM, LAMP_SHADE);
+    }
+
+    private static float centred(int x, int half) {
+        float middle = (SIZE - 1) / 2.0F;
+        return 1.0F - Math.abs(x - middle) / half;
+    }
+
+    private static boolean isCoil(int row) {
+        for (int coil : COIL_ROWS) {
+            if (coil == row) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void hearth(int[][] pixels, Tier tier, boolean lit) {
