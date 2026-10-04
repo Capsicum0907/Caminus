@@ -10,17 +10,21 @@ public final class FurnaceData implements ContainerData {
 
     private static final int HEAT = 0;
     private static final int BURN_LENGTH = 2;
-    private static final int LINES = 4;
+    private static final int WORKING = 4;
+    private static final int LINES = 5;
 
     private final int lines;
     private final IntSupplier heat;
     private final IntSupplier burnLength;
+    private final IntSupplier working;
     private final IntUnaryOperator progress;
 
-    public FurnaceData(int lines, IntSupplier heat, IntSupplier burnLength, IntUnaryOperator progress) {
+    public FurnaceData(int lines, IntSupplier heat, IntSupplier burnLength, IntSupplier working,
+            IntUnaryOperator progress) {
         this.lines = lines;
         this.heat = heat;
         this.burnLength = burnLength;
+        this.working = working;
         this.progress = progress;
     }
 
@@ -34,7 +38,10 @@ public final class FurnaceData implements ContainerData {
 
     @Override
     public int get(int index) {
-        if (index < LINES) {
+        if (index == WORKING) {
+            return working.getAsInt();
+        }
+        if (index < WORKING) {
             int whole = (index < BURN_LENGTH ? heat : burnLength).getAsInt();
             return (index & 1) == 0 ? whole >>> 16 : whole & 0xFFFF;
         }
@@ -56,6 +63,10 @@ public final class FurnaceData implements ContainerData {
 
     public static int burnLength(ContainerData data) {
         return whole(data, BURN_LENGTH);
+    }
+
+    public static boolean working(ContainerData data) {
+        return data.get(WORKING) != 0;
     }
 
     public static float progress(ContainerData data, int line) {

@@ -102,7 +102,7 @@ public class FurnaceMenu extends AbstractContainerMenu {
     }
 
     public boolean burning() {
-        return FurnaceData.heat(data) > 0;
+        return FurnaceData.working(data);
     }
 
     public float progress(int line) {

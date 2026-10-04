@@ -58,6 +58,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     private final OutputView outputView;
     private int heat;
     private int burnLength;
+    private boolean working;
 
     public FurnaceBlockEntity(BlockPos pos, BlockState state) {
         super(FornaxRegistry.FURNACE_ENTITY.get(), pos, state);
@@ -86,7 +87,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         for (int line = 0; line < lines; line++) {
             checks.add(RecipeManager.createCheck(RecipeType.SMELTING));
         }
-        this.data = new FurnaceData(lines, () -> heat, () -> burnLength, this::progressOf);
+        this.data = new FurnaceData(lines, () -> heat, () -> burnLength, () -> working ? 1 : 0, this::progressOf);
         this.inputView = new InputView(inputs);
         this.outputView = new OutputView(outputs, fuel);
     }
@@ -144,6 +145,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         for (int line = 0; line < furnace.tier.lines(); line++) {
             working |= furnace.work(level, line);
         }
+        furnace.working = working;
         if (state.getValue(FurnaceBlock.LIT) != working) {
             level.setBlock(pos, state.setValue(FurnaceBlock.LIT, working), 3);
         }
@@ -168,7 +170,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         }
         int cost = recipe.value().getCookingTime();
         total[line] = cookTicks(tier, cost);
-        if (heat < cost && !fuelReady()) {
+        if (heat < cost && !pullFuel()) {
             progress[line] = Math.max(0, progress[line] - COOLING);
             return false;
         }

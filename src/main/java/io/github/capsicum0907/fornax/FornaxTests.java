@@ -65,6 +65,10 @@ public final class FornaxTests {
         FurnaceBlockEntity furnace = place(helper, Tier.COPPER);
         furnace.inputs().put(0, new ItemStack(Items.RAW_IRON, 2));
         furnace.fuel().setStackInSlot(0, new ItemStack(Items.COAL));
+        helper.runAtTickTime(3, () -> {
+            check(furnace.fuel().getStackInSlot(0).isEmpty(), "the coal is lit as soon as smelting starts");
+            check(furnace.getBlockState().getValue(FurnaceBlock.LIT), "and the furnace is lit");
+        });
         helper.runAtTickTime(80, () -> check(furnace.outputs().getStackInSlot(0).isEmpty(),
                 "nothing should be done before 83 ticks"));
         helper.runAtTickTime(90, () -> {

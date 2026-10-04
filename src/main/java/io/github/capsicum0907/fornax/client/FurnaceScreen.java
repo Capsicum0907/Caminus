@@ -13,6 +13,7 @@ import io.github.capsicum0907.fornax.Layout;
 public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> {
     private static final ResourceLocation FLAME =
             ResourceLocation.withDefaultNamespace("container/furnace/lit_progress");
+    private static final float ABOVE_ITEMS = 300.0F;
 
     public FurnaceScreen(FurnaceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -29,21 +30,30 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> {
             well(graphics, leftPos + slot.x - 1, topPos + slot.y - 1);
         }
         Layout layout = menu.layout();
-        for (int line = 0; line < menu.lines(); line++) {
-            int x = leftPos + layout.inputX(line);
-            int y = topPos + layout.inputY(line) + Layout.SLOT - 2;
-            int filled = Math.round((Layout.SLOT - 2) * menu.progress(line));
-            graphics.fill(x, y - Layout.BAR, x + Layout.SLOT - 2, y, Palette.PROGRESS_BACK);
-            if (filled > 0) {
-                graphics.fill(x, y - Layout.BAR, x + filled, y, Palette.PROGRESS);
-            }
-        }
         if (menu.burning()) {
             int flame = Math.max(1, Math.round(Layout.FLAME * menu.burned()));
             graphics.blitSprite(FLAME, Layout.FLAME, Layout.FLAME, 0, Layout.FLAME - flame,
                     leftPos + layout.flameX(), topPos + layout.flameY() + Layout.FLAME - flame,
                     Layout.FLAME, flame);
         }
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        super.renderLabels(graphics, mouseX, mouseY);
+        Layout layout = menu.layout();
+        graphics.pose().pushPose();
+        graphics.pose().translate(0.0F, 0.0F, ABOVE_ITEMS);
+        for (int line = 0; line < menu.lines(); line++) {
+            int x = layout.inputX(line);
+            int y = layout.inputY(line) + Layout.SLOT - 2;
+            int filled = Math.round((Layout.SLOT - 2) * menu.progress(line));
+            graphics.fill(x, y - Layout.BAR, x + Layout.SLOT - 2, y, Palette.PROGRESS_BACK);
+            if (filled > 0) {
+                graphics.fill(x, y - Layout.BAR, x + filled, y, Palette.PROGRESS);
+            }
+        }
+        graphics.pose().popPose();
     }
 
     @Override
