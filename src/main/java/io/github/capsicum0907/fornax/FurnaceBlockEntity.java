@@ -33,22 +33,20 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     private static final String INPUTS = "Inputs";
     private static final String OUTPUTS = "Outputs";
-    private static final String FUEL = "Fuel";
-    private static final String HEAT = "Heat";
-    private static final String BURN_LENGTH = "BurnLength";
     private static final String PROGRESS = "Progress";
     private static final String USED = "RecipesUsed";
     private static final int COOLING = 2;
 
-    private final Tier tier;
+    private final Rung rung;
     private final Hold inputs;
     private final Hold outputs;
-    private final ItemStackHandler fuel;
+    private final Power power;
     private final int[] progress;
     private final int[] total;
     private final long[] planned;
@@ -57,49 +55,37 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     private final FurnaceData data;
     private final InputView inputView;
     private final OutputView outputView;
-    private int heat;
-    private int burnLength;
     private boolean working;
 
     public FurnaceBlockEntity(BlockPos pos, BlockState state) {
         super(FornaxRegistry.FURNACE_ENTITY.get(), pos, state);
-        this.tier = ((FurnaceBlock) state.getBlock()).tier();
-        int lines = tier.lines();
+        this.rung = ((FurnaceBlock) state.getBlock()).rung();
+        int lines = rung.lines();
         this.inputs = new Hold(lines, this::batch, this::setChanged);
         this.outputs = new Hold(lines, this::batch, this::setChanged);
-        this.fuel = new ItemStackHandler(1) {
-            @Override
-            public boolean isItemValid(int slot, ItemStack stack) {
-                return burns(stack);
-            }
-
-            @Override
-            public int getSlotLimit(int slot) {
-                return Integer.MAX_VALUE;
-            }
-
-            @Override
-            protected void onContentsChanged(int slot) {
-                setChanged();
-            }
-        };
+        this.power = rung.kind() == Kind.ELECTRIC ? new ElectricPower(rung, this::setChanged)
+                : new FuelPower(this::setChanged);
         this.progress = new int[lines];
         this.total = new int[lines];
         this.planned = new long[lines];
         for (int line = 0; line < lines; line++) {
             checks.add(RecipeManager.createCheck(RecipeType.SMELTING));
         }
-        this.data = new FurnaceData(lines, this::shownHeat, () -> burnLength, () -> working ? 1 : 0, this::progressOf);
+        this.data = new FurnaceData(lines, this::gauge, power::gaugeFull, () -> working ? 1 : 0, this::progressOf);
         this.inputView = new InputView(inputs);
-        this.outputView = new OutputView(outputs, fuel);
+        this.outputView = new OutputView(outputs, power.fuel());
     }
 
-    public Tier tier() {
-        return tier;
+    public Rung rung() {
+        return rung;
     }
 
     public int batch() {
-        return FornaxConfig.batch(tier);
+        return rung.batch();
+    }
+
+    public Power power() {
+        return power;
     }
 
     public Hold inputs() {
@@ -111,7 +97,11 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public ItemStackHandler fuel() {
-        return fuel;
+        return power.fuel();
+    }
+
+    public IEnergyStorage energy() {
+        return power.energy();
     }
 
     public InputView inputView() {
@@ -123,7 +113,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public int heat() {
-        return heat;
+        return power instanceof FuelPower fuel ? fuel.heat() : 0;
     }
 
     public long used(ResourceLocation recipe) {
@@ -131,11 +121,11 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public static boolean burns(ItemStack stack) {
-        return stack.getBurnTime(RecipeType.SMELTING) > 0;
+        return FuelPower.burns(stack);
     }
 
-    public static int cookTicks(Tier tier, int recipeTicks) {
-        return (int) Math.max(1, Math.round(recipeTicks * (double) FornaxConfig.ticks(tier) / FornaxConfig.STANDARD));
+    public static int cookTicks(Rung rung, int recipeTicks) {
+        return (int) Math.max(1, Math.round(recipeTicks * (double) rung.ticks() / FornaxConfig.STANDARD));
     }
 
     private int progressOf(int line) {
@@ -144,7 +134,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, FurnaceBlockEntity furnace) {
         boolean working = false;
-        for (int line = 0; line < furnace.tier.lines(); line++) {
+        for (int line = 0; line < furnace.rung.lines(); line++) {
             working |= furnace.work(level, line);
         }
         furnace.working = working;
@@ -171,8 +161,8 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
             return false;
         }
         int cost = recipe.value().getCookingTime();
-        total[line] = cookTicks(tier, cost);
-        if (heat < cost && !pullFuel()) {
+        total[line] = cookTicks(rung, cost);
+        if (!power.ready(cost)) {
             progress[line] = Math.max(0, progress[line] - COOLING);
             return false;
         }
@@ -192,24 +182,24 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         planned[line] = 0;
     }
 
-    private int shownHeat() {
+    private int gauge() {
         double spent = 0;
         for (int line = 0; line < progress.length; line++) {
             if (total[line] > 0) {
                 spent += planned[line] * (double) progress[line] / total[line];
             }
         }
-        return (int) Math.max(0, Math.round(heat - spent));
+        return power.gauge(spent);
     }
 
     private void finish(int line, RecipeHolder<SmeltingRecipe> recipe, ItemStack input, ItemStack result, int cost) {
         int fits = outputs.room(line, result) / result.getCount();
         int wanted = Math.min(Math.min(batch(), input.getCount()), fits);
-        int count = afford(wanted, cost);
+        int count = power.afford(wanted, cost);
         if (count <= 0) {
             return;
         }
-        heat -= count * cost;
+        power.pay(count, cost);
         inputs.put(line, input.copyWithCount(input.getCount() - count));
         ItemStack held = outputs.getStackInSlot(line);
         int made = count * result.getCount();
@@ -217,31 +207,6 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         used.addTo(recipe.id(), count);
         progress[line] = 0;
         setChanged();
-    }
-
-    private int afford(int wanted, int cost) {
-        long needed = (long) wanted * cost;
-        while (heat < needed && pullFuel()) {
-        }
-        return (int) Math.min(wanted, heat / cost);
-    }
-
-    private boolean fuelReady() {
-        ItemStack stack = fuel.getStackInSlot(0);
-        return burns(stack) && (stack.getCount() == 1 || stack.getCraftingRemainingItem().isEmpty());
-    }
-
-    private boolean pullFuel() {
-        if (!fuelReady()) {
-            return false;
-        }
-        ItemStack stack = fuel.getStackInSlot(0);
-        int burn = stack.getBurnTime(RecipeType.SMELTING);
-        ItemStack remainder = stack.getCraftingRemainingItem();
-        fuel.setStackInSlot(0, stack.getCount() == 1 ? remainder : stack.copyWithCount(stack.getCount() - 1));
-        heat += burn;
-        burnLength = burn;
-        return true;
     }
 
     public void awardExperience(ServerLevel level, Vec3 at, ServerPlayer player) {
@@ -283,7 +248,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
                 }
             }
         }
-        all.add(fuel.getStackInSlot(0).copy());
+        power.spill(all);
         return all;
     }
 
@@ -292,9 +257,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         super.saveAdditional(tag, registries);
         tag.put(INPUTS, inputs.serializeNBT(registries));
         tag.put(OUTPUTS, outputs.serializeNBT(registries));
-        tag.put(FUEL, fuel.serializeNBT(registries));
-        tag.putInt(HEAT, heat);
-        tag.putInt(BURN_LENGTH, burnLength);
+        power.save(tag, registries);
         tag.putIntArray(PROGRESS, progress);
         CompoundTag recipes = new CompoundTag();
         used.forEach((id, count) -> recipes.putLong(id.toString(), count));
@@ -306,9 +269,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         super.loadAdditional(tag, registries);
         inputs.deserializeNBT(registries, tag.getCompound(INPUTS));
         outputs.deserializeNBT(registries, tag.getCompound(OUTPUTS));
-        fuel.deserializeNBT(registries, tag.getCompound(FUEL));
-        heat = tag.getInt(HEAT);
-        burnLength = tag.getInt(BURN_LENGTH);
+        power.load(tag, registries);
         int[] saved = tag.getIntArray(PROGRESS);
         System.arraycopy(saved, 0, progress, 0, Math.min(saved.length, progress.length));
         used.clear();

@@ -20,6 +20,7 @@ import io.github.capsicum0907.fornax.data.TestStructures;
 @PrefixGameTestTemplate(false)
 public final class FornaxTests {
     private static final BlockPos WHERE = new BlockPos(2, 1, 2);
+    private static final int VANILLA_TIMEOUT = 300;
     private static final ResourceLocation RAW_IRON_RECIPE =
             ResourceLocation.withDefaultNamespace("iron_ingot_from_smelting_raw_iron");
 
@@ -188,6 +189,109 @@ public final class FornaxTests {
         for (Tier tier : Tier.values()) {
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Fornax.MODID, FornaxRegistry.id(tier));
             check(recipes.byKey(id).isPresent(), tier.id() + " should have a recipe");
+        }
+        helper.succeed();
+    }
+
+    private static FurnaceBlockEntity placeElectric(GameTestHelper helper, Tier tier) {
+        helper.setBlock(WHERE, FornaxRegistry.electric(tier).get());
+        return (FurnaceBlockEntity) helper.getBlockEntity(WHERE);
+    }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void theElectricBufferMatchesTheTable(GameTestHelper helper) {
+        check(placeElectric(helper, null).energy().getMaxEnergyStored() == 8_000, "the vanilla rung holds 8,000 FE");
+        check(placeElectric(helper, Tier.COPPER).energy().getMaxEnergyStored() == 9_600, "copper holds 9,600 FE");
+        check(placeElectric(helper, Tier.SUPER_COMPRESSED_NETHER_STAR).energy().getMaxEnergyStored() == Integer.MAX_VALUE,
+                "the top tier holds as much as an int can");
+        helper.succeed();
+    }
+
+    @GameTest(template = TestStructures.FLOOR, timeoutTicks = VANILLA_TIMEOUT)
+    public static void oneSmeltCostsFourThousandFe(GameTestHelper helper) {
+        FurnaceBlockEntity furnace = placeElectric(helper, null);
+        furnace.inputs().put(0, new ItemStack(Items.RAW_IRON));
+        furnace.energy().receiveEnergy(4_000, false);
+        helper.runAtTickTime(195, () -> check(furnace.outputs().getStackInSlot(0).isEmpty(),
+                "the vanilla rung takes 200 ticks"));
+        helper.runAtTickTime(210, () -> {
+            check(furnace.outputs().getStackInSlot(0).getCount() == 1, "one ingot after 200 ticks");
+            check(furnace.energy().getEnergyStored() == 0, "for exactly 4,000 FE, leaving " + furnace.energy().getEnergyStored());
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TestStructures.FLOOR, timeoutTicks = VANILLA_TIMEOUT)
+    public static void oneFeShortSmeltsNothing(GameTestHelper helper) {
+        FurnaceBlockEntity furnace = placeElectric(helper, null);
+        furnace.inputs().put(0, new ItemStack(Items.RAW_IRON));
+        furnace.energy().receiveEnergy(3_999, false);
+        helper.runAtTickTime(220, () -> {
+            check(furnace.outputs().getStackInSlot(0).isEmpty(), "3,999 FE is not enough for one smelt");
+            check(furnace.energy().getEnergyStored() == 3_999, "and none of it is spent");
+            check(!furnace.getBlockState().getValue(FurnaceBlock.LIT), "and the furnace is not lit");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void theBatchStopsWhereTheEnergyDoes(GameTestHelper helper) {
+        FurnaceBlockEntity furnace = placeElectric(helper, Tier.DIAMOND);
+        furnace.inputs().put(0, new ItemStack(Items.RAW_IRON, 16));
+        furnace.energy().receiveEnergy(8_000, false);
+        helper.runAtTickTime(40, () -> {
+            check(furnace.outputs().getStackInSlot(0).getCount() == 2, "8,000 FE smelts two, not "
+                    + furnace.outputs().getStackInSlot(0).getCount());
+            check(furnace.inputs().getStackInSlot(0).getCount() == 14, "and the rest waits");
+            check(furnace.energy().getEnergyStored() == 0, "with nothing left");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void energySurvivesSaving(GameTestHelper helper) {
+        FurnaceBlockEntity furnace = placeElectric(helper, Tier.COPPER);
+        furnace.energy().receiveEnergy(5_432, false);
+        var registries = helper.getLevel().registryAccess();
+        CompoundTag saved = furnace.saveWithoutMetadata(registries);
+        FurnaceBlockEntity loaded = new FurnaceBlockEntity(furnace.getBlockPos(), furnace.getBlockState());
+        loaded.loadWithComponents(saved, registries);
+        check(loaded.energy().getEnergyStored() == 5_432, "5,432 FE should come back, not " + loaded.energy().getEnergyStored());
+        helper.succeed();
+    }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void everyFaceTakesEnergy(GameTestHelper helper) {
+        placeElectric(helper, Tier.COPPER);
+        var level = helper.getLevel();
+        BlockPos at = helper.absolutePos(WHERE);
+        check(level.getCapability(Capabilities.EnergyStorage.BLOCK, at, null) != null, "with no side");
+        for (Direction side : Direction.values()) {
+            check(level.getCapability(Capabilities.EnergyStorage.BLOCK, at, side) != null, "from " + side);
+        }
+        place(helper, Tier.COPPER);
+        check(level.getCapability(Capabilities.EnergyStorage.BLOCK, at, Direction.NORTH) == null,
+                "a fuel furnace takes no energy");
+        helper.succeed();
+    }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void anElectricFurnaceHasNoFuelSlot(GameTestHelper helper) {
+        FurnaceBlockEntity furnace = placeElectric(helper, Tier.COPPER);
+        check(furnace.fuel() == null, "there is nowhere to put fuel");
+        ItemStack left = face(helper, Direction.NORTH).insertItem(0, new ItemStack(Items.RAW_IRON), false);
+        check(left.isEmpty() && furnace.inputs().getStackInSlot(0).getCount() == 1, "the sides feed the input");
+        helper.succeed();
+    }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void everyElectricRungHasARecipe(GameTestHelper helper) {
+        var recipes = helper.getLevel().getRecipeManager();
+        check(recipes.byKey(ResourceLocation.fromNamespaceAndPath(Fornax.MODID, "electric_furnace")).isPresent(),
+                "the vanilla rung should have a recipe");
+        for (Tier tier : Tier.values()) {
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Fornax.MODID, tier.id() + "_electric_furnace");
+            check(recipes.byKey(id).isPresent(), id + " should have a recipe");
         }
         helper.succeed();
     }

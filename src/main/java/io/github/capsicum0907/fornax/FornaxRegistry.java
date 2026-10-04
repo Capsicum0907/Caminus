@@ -1,7 +1,7 @@
 package io.github.capsicum0907.fornax;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,20 +35,20 @@ public final class FornaxRegistry {
     private static final int LIT_LIGHT = 13;
     private static final float HARDNESS = 3.5F;
 
-    private static final Map<Tier, DeferredBlock<FurnaceBlock>> FURNACES = new EnumMap<>(Tier.class);
+    private static final Map<Rung, DeferredBlock<FurnaceBlock>> FURNACES = new LinkedHashMap<>();
     private static final List<DeferredItem<BlockItem>> ITEM_ORDER = new ArrayList<>();
 
     static {
-        for (Tier tier : Tier.values()) {
-            DeferredBlock<FurnaceBlock> block = BLOCKS.registerBlock(id(tier),
-                    properties -> new FurnaceBlock(tier, properties),
+        for (Rung rung : Rung.all()) {
+            DeferredBlock<FurnaceBlock> block = BLOCKS.registerBlock(rung.id(),
+                    properties -> new FurnaceBlock(rung, properties),
                     BlockBehaviour.Properties.of()
                             .mapColor(MapColor.METAL)
                             .strength(HARDNESS)
                             .requiresCorrectToolForDrops()
                             .sound(SoundType.METAL)
                             .lightLevel(state -> state.getValue(FurnaceBlock.LIT) ? LIT_LIGHT : 0));
-            FURNACES.put(tier, block);
+            FURNACES.put(rung, block);
             ITEM_ORDER.add(ITEMS.registerSimpleBlockItem(block));
         }
     }
@@ -71,11 +71,19 @@ public final class FornaxRegistry {
     }
 
     public static String id(Tier tier) {
-        return tier.id() + "_furnace";
+        return new Rung(Kind.FUEL, tier).id();
     }
 
     public static DeferredBlock<FurnaceBlock> furnace(Tier tier) {
-        return FURNACES.get(tier);
+        return block(new Rung(Kind.FUEL, tier));
+    }
+
+    public static DeferredBlock<FurnaceBlock> electric(Tier tier) {
+        return block(new Rung(Kind.ELECTRIC, tier));
+    }
+
+    public static DeferredBlock<FurnaceBlock> block(Rung rung) {
+        return FURNACES.get(rung);
     }
 
     public static List<DeferredItem<BlockItem>> items() {

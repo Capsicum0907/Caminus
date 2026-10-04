@@ -40,13 +40,18 @@ public class Fornax {
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FornaxRegistry.FURNACE_ENTITY.get(),
                 Fornax::face);
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, FornaxRegistry.FURNACE_ENTITY.get(),
+                (furnace, side) -> furnace.energy());
     }
 
     public static IItemHandler face(FurnaceBlockEntity furnace, Direction side) {
-        if (side == Direction.UP || side == null) {
+        if (side == Direction.DOWN) {
+            return furnace.outputView();
+        }
+        if (side == Direction.UP || side == null || furnace.fuel() == null) {
             return furnace.inputView();
         }
-        return side == Direction.DOWN ? furnace.outputView() : furnace.fuel();
+        return furnace.fuel();
     }
 
     @Mod(value = MODID, dist = Dist.CLIENT)

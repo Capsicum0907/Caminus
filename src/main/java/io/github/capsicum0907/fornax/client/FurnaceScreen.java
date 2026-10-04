@@ -44,14 +44,22 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     private static final int COUNT_CORNER = 17;
     private static final float ABOVE_ITEM = 200.0F;
     private static final int COUNT_COLOUR = 0xFFFFFF;
+    private static final int RESULT_FRAME_U = 111;
+    private static final int RESULT_FRAME_V = 30;
+    private static final int RESULT_FRAME = 26;
+    private static final int RESULT_FRAME_INSET = 5;
+    private static final int FRAME_EDGE = 1;
+    private static final int ENERGY = 0xFFB02E26;
+    private static final int ENERGY_EMPTY = 0xFF3A1210;
     private static final int NARROW_BELOW = 379;
 
-    private final SmeltingRecipeBookComponent recipeBook = new SmeltingRecipeBookComponent();
+    private final SmeltingRecipeBookComponent recipeBook;
     private boolean widthTooNarrow;
     private boolean book;
 
     public FurnaceScreen(FurnaceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
+        this.recipeBook = menu.electric() ? new ElectricRecipeBook() : new SmeltingRecipeBookComponent();
         Layout layout = menu.layout();
         this.imageWidth = layout.width();
         this.imageHeight = layout.height();
@@ -110,27 +118,79 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         Layout layout = menu.layout();
-        float progress;
-        if (layout.vanilla()) {
+        if (layout.vanilla() && !layout.electric()) {
             graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
-            progress = menu.progress(0);
         } else {
             panel(graphics);
             for (Slot slot : menu.slots) {
-                graphics.blit(TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1, SLOT_FRAME_U, SLOT_FRAME_V,
-                        Layout.SLOT, Layout.SLOT);
+                if (!slot.isActive()) {
+                    continue;
+                }
+                if (layout.vanilla() && slot.index == FurnaceMenu.RESULT_SLOT) {
+                    graphics.blit(TEXTURE, leftPos + slot.x - RESULT_FRAME_INSET, topPos + slot.y - RESULT_FRAME_INSET,
+                            RESULT_FRAME_U, RESULT_FRAME_V, RESULT_FRAME, RESULT_FRAME);
+                } else {
+                    graphics.blit(TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1, SLOT_FRAME_U, SLOT_FRAME_V,
+                            Layout.SLOT, Layout.SLOT);
+                }
             }
-            graphics.blit(TEXTURE, leftPos + layout.flameX(), topPos + layout.flameY(), EMPTY_FLAME_U,
-                    EMPTY_FLAME_V, Layout.FLAME, Layout.FLAME);
-            progress = menu.progress();
+            if (!layout.electric()) {
+                graphics.blit(TEXTURE, leftPos + layout.flameX(), topPos + layout.flameY(), EMPTY_FLAME_U,
+                        EMPTY_FLAME_V, Layout.FLAME, Layout.FLAME);
+            }
+            if (layout.vanilla()) {
+                graphics.blit(TEXTURE, leftPos + layout.arrowX(), topPos + layout.arrowY(), EMPTY_ARROW_U,
+                        EMPTY_ARROW_V, Layout.ARROW_WIDTH, Layout.ARROW_HEIGHT);
+            }
         }
-        arrow(graphics, layout, progress);
-        if (menu.burning()) {
+        arrow(graphics, layout, layout.vanilla() ? menu.progress(0) : menu.progress());
+        if (layout.electric()) {
+            bar(graphics, layout);
+        } else if (menu.burning()) {
             int flame = Mth.ceil(menu.burned() * (Layout.FLAME - 1)) + 1;
             graphics.blitSprite(FLAME, Layout.FLAME, Layout.FLAME, 0, Layout.FLAME - flame,
                     leftPos + layout.flameX(), topPos + layout.flameY() + Layout.FLAME - flame,
                     Layout.FLAME, flame);
         }
+    }
+
+    private void bar(GuiGraphics graphics, Layout layout) {
+        int x = leftPos + layout.barX();
+        int y = topPos + layout.barY();
+        int width = layout.barWidth();
+        int height = layout.barHeight();
+        int inner = Layout.SLOT - FRAME_EDGE * 2;
+        graphics.blit(TEXTURE, x, y, SLOT_FRAME_U, SLOT_FRAME_V, width, FRAME_EDGE);
+        graphics.blit(TEXTURE, x, y + height - FRAME_EDGE, SLOT_FRAME_U, SLOT_FRAME_V + Layout.SLOT - FRAME_EDGE,
+                width, FRAME_EDGE);
+        stretch(graphics, x, y + FRAME_EDGE, width, height - FRAME_EDGE * 2, SLOT_FRAME_U, SLOT_FRAME_V + FRAME_EDGE,
+                Layout.SLOT, inner);
+        int left = x + FRAME_EDGE;
+        int top = y + FRAME_EDGE;
+        int bottom = y + height - FRAME_EDGE;
+        graphics.fill(left, top, left + inner, bottom, ENERGY_EMPTY);
+        int filled = Math.round((bottom - top) * menu.charged());
+        if (filled > 0) {
+            graphics.fill(left, bottom - filled, left + inner, bottom, ENERGY);
+        }
+    }
+
+    private boolean overBar(int mouseX, int mouseY) {
+        Layout layout = menu.layout();
+        int x = leftPos + layout.barX();
+        int y = topPos + layout.barY();
+        return layout.electric() && mouseX >= x && mouseX < x + layout.barWidth()
+                && mouseY >= y && mouseY < y + layout.barHeight();
+    }
+
+    @Override
+    protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        if (menu.getCarried().isEmpty() && overBar(mouseX, mouseY)) {
+            graphics.renderTooltip(font, Component.translatable("gui.fornax.energy",
+                    String.format("%,d", menu.energy()), String.format("%,d", menu.capacity())), mouseX, mouseY);
+            return;
+        }
+        super.renderTooltip(graphics, mouseX, mouseY);
     }
 
     private void arrow(GuiGraphics graphics, Layout layout, float progress) {

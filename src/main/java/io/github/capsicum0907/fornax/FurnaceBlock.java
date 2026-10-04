@@ -1,5 +1,7 @@
 package io.github.capsicum0907.fornax;
 
+import java.util.Optional;
+
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -32,22 +34,23 @@ public class FurnaceBlock extends BaseEntityBlock {
 
     public static final MapCodec<FurnaceBlock> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
-                    Tier.CODEC.fieldOf("tier").forGetter(FurnaceBlock::tier),
+                    Kind.CODEC.fieldOf("kind").forGetter(block -> block.rung().kind()),
+                    Tier.CODEC.optionalFieldOf("tier").forGetter(block -> Optional.ofNullable(block.rung().tier())),
                     propertiesCodec())
-                    .apply(instance, FurnaceBlock::new));
+                    .apply(instance, (kind, tier, properties) -> new FurnaceBlock(new Rung(kind, tier.orElse(null)), properties)));
 
-    private final Tier tier;
+    private final Rung rung;
 
-    public FurnaceBlock(Tier tier, Properties properties) {
+    public FurnaceBlock(Rung rung, Properties properties) {
         super(properties);
-        this.tier = tier;
+        this.rung = rung;
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(LIT, Boolean.FALSE));
     }
 
-    public Tier tier() {
-        return tier;
+    public Rung rung() {
+        return rung;
     }
 
     @Override
@@ -83,7 +86,8 @@ public class FurnaceBlock extends BaseEntityBlock {
         }
         if (level.getBlockEntity(pos) instanceof FurnaceBlockEntity furnace) {
             player.openMenu(furnace, buffer -> {
-                buffer.writeVarInt(furnace.tier().ordinal());
+                buffer.writeVarInt(furnace.rung().kind().ordinal());
+                buffer.writeVarInt(furnace.rung().vanilla() ? -1 : furnace.rung().tier().ordinal());
                 buffer.writeVarInt(furnace.batch());
             });
         }

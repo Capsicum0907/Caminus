@@ -14,12 +14,12 @@ public class OutputView implements IItemHandler {
     }
 
     private boolean isFuelSlot(int slot) {
-        return slot == outputs.getSlots();
+        return fuel != null && slot == outputs.getSlots();
     }
 
     @Override
     public int getSlots() {
-        return outputs.getSlots() + 1;
+        return outputs.getSlots() + (fuel == null ? 0 : 1);
     }
 
     @Override

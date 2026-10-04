@@ -39,6 +39,7 @@ public final class Layout {
     private static final int BELOW_HOTBAR = 24;
 
     private final int lines;
+    private final boolean electric;
     private final boolean vanilla;
     private final int perRow;
     private final int rows;
@@ -46,8 +47,9 @@ public final class Layout {
     private final int inventoryFrame;
     private final int slotsLeft;
 
-    public Layout(int lines) {
+    public Layout(int lines, boolean electric) {
         this.lines = lines;
+        this.electric = electric;
         this.vanilla = lines == 1;
         this.perRow = Math.min(lines, PER_ROW);
         this.rows = (lines + perRow - 1) / perRow;
@@ -65,6 +67,26 @@ public final class Layout {
 
     public boolean vanilla() {
         return vanilla;
+    }
+
+    public boolean electric() {
+        return electric;
+    }
+
+    public int barX() {
+        return fuelX() - 1;
+    }
+
+    public int barY() {
+        return flameY();
+    }
+
+    public int barWidth() {
+        return SLOT;
+    }
+
+    public int barHeight() {
+        return fuelY() - 1 + SLOT - flameY();
     }
 
     public int width() {

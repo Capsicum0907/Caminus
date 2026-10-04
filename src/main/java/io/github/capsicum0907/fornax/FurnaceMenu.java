@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.RecipeBookType;
@@ -34,31 +35,43 @@ public class FurnaceMenu extends RecipeBookMenu<SingleRecipeInput, AbstractCooki
     private final Layout layout;
     private final Level level;
     private final int lines;
+    private final Rung rung;
 
     public FurnaceMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buffer) {
-        this(id, inventory, null, Tier.byOrdinal(buffer.readVarInt()), buffer.readVarInt(), null);
+        this(id, inventory, null, rung(buffer), buffer.readVarInt(), null);
     }
 
     public FurnaceMenu(int id, Inventory inventory, FurnaceBlockEntity furnace, ContainerData data) {
-        this(id, inventory, furnace, furnace.tier(), furnace.batch(), data);
+        this(id, inventory, furnace, furnace.rung(), furnace.batch(), data);
     }
 
-    private FurnaceMenu(int id, Inventory inventory, FurnaceBlockEntity furnace, Tier tier, int batch,
+    private static Rung rung(RegistryFriendlyByteBuf buffer) {
+        Kind kind = Kind.byOrdinal(buffer.readVarInt());
+        int tier = buffer.readVarInt();
+        return new Rung(kind, tier < 0 ? null : Tier.byOrdinal(tier));
+    }
+
+    private FurnaceMenu(int id, Inventory inventory, FurnaceBlockEntity furnace, Rung rung, int batch,
             ContainerData data) {
         super(FornaxRegistry.FURNACE_MENU.get(), id);
         this.furnace = furnace;
-        this.lines = tier.lines();
-        this.layout = new Layout(lines);
+        this.rung = rung;
+        this.lines = rung.lines();
+        this.layout = new Layout(lines, electric());
         this.level = inventory.player.level();
         this.data = data != null ? data : new SimpleContainerData(FurnaceData.size(lines));
         Hold inputs = furnace != null ? furnace.inputs() : new Hold(lines, () -> batch, () -> {
         });
         Hold outputs = furnace != null ? furnace.outputs() : new Hold(lines, () -> batch, () -> {
         });
-        ItemStackHandler fuel = furnace != null ? furnace.fuel() : clientFuel();
-
         addSlot(input(inputs, 0));
-        addSlot(new SlotItemHandler(fuel, 0, layout.fuelX(), layout.fuelY()));
+        if (electric()) {
+            addSlot(new Placeholder(layout.fuelX(), layout.fuelY()));
+        } else {
+            ItemStackHandler fuel = furnace != null ? furnace.fuel() : FuelPower.slot(() -> {
+            });
+            addSlot(new SlotItemHandler(fuel, 0, layout.fuelX(), layout.fuelY()));
+        }
         addSlot(output(outputs, 0));
         for (int line = 1; line < lines; line++) {
             addSlot(input(inputs, line));
@@ -87,24 +100,31 @@ public class FurnaceMenu extends RecipeBookMenu<SingleRecipeInput, AbstractCooki
         return new HeldSlot(outputs, line, layout.outputX(line), layout.outputY(line), false, this::award);
     }
 
-    private static ItemStackHandler clientFuel() {
-        return new ItemStackHandler(1) {
-            @Override
-            public boolean isItemValid(int slot, ItemStack stack) {
-                return FurnaceBlockEntity.burns(stack);
-            }
-
-            @Override
-            public int getSlotLimit(int slot) {
-                return Integer.MAX_VALUE;
-            }
-        };
-    }
-
     private void award(Player player) {
         if (furnace != null && player instanceof ServerPlayer server) {
             furnace.awardExperience(server.serverLevel(), server.position(), server);
         }
+    }
+
+    public boolean electric() {
+        return rung.kind() == Kind.ELECTRIC;
+    }
+
+    public Rung rung() {
+        return rung;
+    }
+
+    public int energy() {
+        return FurnaceData.heat(data);
+    }
+
+    public int capacity() {
+        return FurnaceData.burnLength(data);
+    }
+
+    public float charged() {
+        int capacity = capacity();
+        return capacity <= 0 ? 0.0F : Math.min(1.0F, energy() / (float) capacity);
     }
 
     public Layout layout() {
@@ -236,7 +256,7 @@ public class FurnaceMenu extends RecipeBookMenu<SingleRecipeInput, AbstractCooki
                 moved |= moveItemStackTo(inSlot, inputSlot(line), inputSlot(line) + 1, false);
             }
         }
-        if (!moved && FurnaceBlockEntity.burns(inSlot)) {
+        if (!moved && !electric() && FurnaceBlockEntity.burns(inSlot)) {
             moved = moveItemStackTo(inSlot, FUEL_SLOT, FUEL_SLOT + 1, false);
         }
         if (!moved) {
@@ -272,6 +292,27 @@ public class FurnaceMenu extends RecipeBookMenu<SingleRecipeInput, AbstractCooki
         }
         return !furnace.isRemoved()
                 && player.distanceToSqr(furnace.getBlockPos().getCenter()) <= REACH * REACH;
+    }
+
+    public static class Placeholder extends Slot {
+        public Placeholder(int x, int y) {
+            super(new SimpleContainer(1), 0, x, y);
+        }
+
+        @Override
+        public boolean isActive() {
+            return false;
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return false;
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            return false;
+        }
     }
 
     public static class HeldSlot extends SlotItemHandler {

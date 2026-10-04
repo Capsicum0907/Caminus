@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import com.google.common.hash.Hashing;
 
 import net.minecraft.Util;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
@@ -44,10 +45,13 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import io.github.capsicum0907.fornax.Fornax;
 import io.github.capsicum0907.fornax.FornaxRegistry;
 import io.github.capsicum0907.fornax.FurnaceBlock;
+import io.github.capsicum0907.fornax.Kind;
+import io.github.capsicum0907.fornax.Rung;
 import io.github.capsicum0907.fornax.Tier;
 
 @EventBusSubscriber(modid = Fornax.MODID, value = { Dist.CLIENT, Dist.DEDICATED_SERVER })
 public final class FornaxDataGen {
+    private static final float OVERLAY_LIFT = 0.01F;
     private FornaxDataGen() {
     }
 
@@ -60,14 +64,19 @@ public final class FornaxDataGen {
         ExistingFileHelper helper = event.getExistingFileHelper();
         ExistingFileHelper.ResourceType texture =
                 new ExistingFileHelper.ResourceType(PackType.CLIENT_RESOURCES, ".png", "textures");
-        for (Tier tier : Tier.values()) {
+        for (Rung rung : Rung.all()) {
+            if (rung.vanilla()) {
+                continue;
+            }
             for (Skins.Face face : Skins.Face.values()) {
-                helper.trackGenerated(block(Skins.name(tier, face, false)), texture);
+                helper.trackGenerated(block(Skins.name(rung, face, false)), texture);
                 if (Skins.lights(face)) {
-                    helper.trackGenerated(block(Skins.name(tier, face, true)), texture);
+                    helper.trackGenerated(block(Skins.name(rung, face, true)), texture);
                 }
             }
         }
+        helper.trackGenerated(block(Skins.overlayName(false)), texture);
+        helper.trackGenerated(block(Skins.overlayName(true)), texture);
 
         generator.addProvider(event.includeClient(), new Textures(output));
         generator.addProvider(event.includeClient(), new Models(output, helper));
@@ -86,8 +95,8 @@ public final class FornaxDataGen {
 
     private static List<Block> ours() {
         List<Block> blocks = new ArrayList<>();
-        for (Tier tier : Tier.values()) {
-            blocks.add(FornaxRegistry.furnace(tier).get());
+        for (Rung rung : Rung.all()) {
+            blocks.add(FornaxRegistry.block(rung).get());
         }
         return blocks;
     }
@@ -102,14 +111,19 @@ public final class FornaxDataGen {
         @Override
         public CompletableFuture<?> run(CachedOutput output) {
             List<CompletableFuture<?>> writing = new ArrayList<>();
-            for (Tier tier : Tier.values()) {
+            for (Rung rung : Rung.all()) {
+                if (rung.vanilla()) {
+                    continue;
+                }
                 for (Skins.Face face : Skins.Face.values()) {
-                    draw(output, writing, Skins.skin(tier, face, false), Skins.name(tier, face, false));
+                    draw(output, writing, Skins.skin(rung, face, false), Skins.name(rung, face, false));
                     if (Skins.lights(face)) {
-                        draw(output, writing, Skins.skin(tier, face, true), Skins.name(tier, face, true));
+                        draw(output, writing, Skins.skin(rung, face, true), Skins.name(rung, face, true));
                     }
                 }
             }
+            draw(output, writing, Skins.overlaySkin(false), Skins.overlayName(false));
+            draw(output, writing, Skins.overlaySkin(true), Skins.overlayName(true));
             return CompletableFuture.allOf(writing.toArray(CompletableFuture[]::new));
         }
 
@@ -141,22 +155,47 @@ public final class FornaxDataGen {
 
         @Override
         protected void registerStatesAndModels() {
-            for (Tier tier : Tier.values()) {
-                String cold = FornaxRegistry.id(tier);
-                ModelFile unlit = model(tier, cold, false);
-                ModelFile lit = model(tier, cold + "_on", true);
-                horizontalBlock(FornaxRegistry.furnace(tier).get(),
+            for (Rung rung : Rung.all()) {
+                String cold = rung.id();
+                ModelFile unlit = rung.vanilla() ? overlaid(cold, false) : model(rung, cold, false);
+                ModelFile lit = rung.vanilla() ? overlaid(cold + "_on", true) : model(rung, cold + "_on", true);
+                horizontalBlock(FornaxRegistry.block(rung).get(),
                         state -> state.getValue(FurnaceBlock.LIT) ? lit : unlit);
                 itemModels().withExistingParent(cold, modLoc("block/" + cold));
             }
         }
 
-        private ModelFile model(Tier tier, String name, boolean lit) {
+        private ModelFile model(Rung rung, String name, boolean lit) {
             return models().orientableWithBottom(name,
-                    modLoc("block/" + Skins.name(tier, Skins.Face.SIDE, false)),
-                    modLoc("block/" + Skins.name(tier, Skins.Face.FRONT, lit)),
-                    modLoc("block/" + Skins.name(tier, Skins.Face.TOP, false)),
-                    modLoc("block/" + Skins.name(tier, Skins.Face.TOP, false)));
+                    modLoc("block/" + Skins.name(rung, Skins.Face.SIDE, false)),
+                    modLoc("block/" + Skins.name(rung, Skins.Face.FRONT, lit)),
+                    modLoc("block/" + Skins.name(rung, Skins.Face.TOP, false)),
+                    modLoc("block/" + Skins.name(rung, Skins.Face.TOP, false)));
+        }
+
+        private ModelFile overlaid(String name, boolean lit) {
+            ResourceLocation side = mcLoc("block/furnace_side");
+            ResourceLocation top = mcLoc("block/furnace_top");
+            ResourceLocation front = mcLoc(lit ? "block/furnace_front_on" : "block/furnace_front");
+            var model = models().withExistingParent(name, mcLoc("block/block"))
+                    .renderType("cutout")
+                    .texture("particle", front)
+                    .texture("side", side)
+                    .texture("top", top)
+                    .texture("front", front)
+                    .texture("overlay", modLoc("block/" + Skins.overlayName(lit)));
+            model.element().from(0, 0, 0).to(16, 16, 16)
+                    .face(Direction.NORTH).texture("#front").cullface(Direction.NORTH).end()
+                    .face(Direction.SOUTH).texture("#side").cullface(Direction.SOUTH).end()
+                    .face(Direction.EAST).texture("#side").cullface(Direction.EAST).end()
+                    .face(Direction.WEST).texture("#side").cullface(Direction.WEST).end()
+                    .face(Direction.UP).texture("#top").cullface(Direction.UP).end()
+                    .face(Direction.DOWN).texture("#top").cullface(Direction.DOWN).end()
+                    .end();
+            model.element().from(0, 0, -OVERLAY_LIFT).to(16, 16, 0)
+                    .face(Direction.NORTH).texture("#overlay").cullface(Direction.NORTH).end()
+                    .end();
+            return model;
         }
     }
 
@@ -169,8 +208,11 @@ public final class FornaxDataGen {
         protected void addTranslations() {
             for (Tier tier : Tier.values()) {
                 add(FornaxRegistry.furnace(tier).get(), "Furnace (Tier " + tier.rung() + ")");
+                add(FornaxRegistry.electric(tier).get(), "Electric Furnace (Tier " + tier.rung() + ")");
             }
+            add(FornaxRegistry.electric(null).get(), "Electric Furnace");
             add("itemGroup." + Fornax.MODID, "Fornax");
+            add("gui.fornax.energy", "%s / %s FE");
         }
     }
 
@@ -183,8 +225,11 @@ public final class FornaxDataGen {
         protected void addTranslations() {
             for (Tier tier : Tier.values()) {
                 add(FornaxRegistry.furnace(tier).get(), "かまど (Tier " + tier.rung() + ")");
+                add(FornaxRegistry.electric(tier).get(), "電気かまど (Tier " + tier.rung() + ")");
             }
+            add(FornaxRegistry.electric(null).get(), "電気かまど");
             add("itemGroup." + Fornax.MODID, "Fornax");
+            add("gui.fornax.energy", "%s / %s FE");
         }
     }
 
@@ -232,32 +277,59 @@ public final class FornaxDataGen {
 
         @Override
         protected void buildRecipes(RecipeOutput output) {
-            for (Tier tier : Tier.values()) {
-                if (tier.compressed()) {
-                    compressed(output, tier);
+            for (Rung rung : Rung.all()) {
+                if (rung.vanilla()) {
+                    vanillaRung(output, rung);
+                } else if (rung.tier().compressed()) {
+                    compressed(output, rung);
                 } else {
-                    laddered(output, tier);
+                    laddered(output, rung);
                 }
             }
         }
 
-        private void laddered(RecipeOutput output, Tier tier) {
-            ItemLike under = tier.under() == null ? Items.FURNACE : FornaxRegistry.furnace(tier.under()).get();
-            ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.furnace(tier).get())
+        private static ItemLike under(Rung rung) {
+            Rung below = rung.under();
+            return below == null ? Items.FURNACE : FornaxRegistry.block(below).get();
+        }
+
+        private static ItemLike core(Kind kind) {
+            return switch (kind) {
+                case FUEL -> Items.COAL_BLOCK;
+                case ELECTRIC -> Items.REDSTONE_BLOCK;
+            };
+        }
+
+        private void vanillaRung(RecipeOutput output, Rung rung) {
+            ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.block(rung).get())
+                    .pattern("CCC")
+                    .pattern("CFC")
+                    .pattern("CRC")
+                    .define('C', Items.COBBLESTONE)
+                    .define('F', Items.FURNACE)
+                    .define('R', core(rung.kind()))
+                    .unlockedBy("has_under", has(Items.FURNACE))
+                    .save(output);
+        }
+
+        private void laddered(RecipeOutput output, Rung rung) {
+            ItemLike under = under(rung);
+            ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.block(rung).get())
                     .pattern("MSM")
                     .pattern("MFM")
                     .pattern("MCM")
-                    .define('M', material(tier))
+                    .define('M', material(rung.tier()))
                     .define('S', Items.SUGAR)
                     .define('F', under)
-                    .define('C', Items.COAL_BLOCK)
+                    .define('C', core(rung.kind()))
                     .unlockedBy("has_under", has(under))
                     .save(output);
         }
 
-        private void compressed(RecipeOutput output, Tier tier) {
-            ItemLike under = FornaxRegistry.furnace(tier.under()).get();
-            ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.furnace(tier).get())
+        private void compressed(RecipeOutput output, Rung rung) {
+            Tier tier = rung.tier();
+            ItemLike under = under(rung);
+            ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.block(rung).get())
                     .pattern("PPP")
                     .pattern("PMP")
                     .pattern("PPP")

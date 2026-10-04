@@ -37,6 +37,21 @@ take proportionally longer or shorter.
 
 Each item costs the same fuel as in a vanilla furnace. One coal smelts 8 items in every tier.
 
+## Electric Furnaces
+
+Electric Furnaces run on Forge Energy (FE) instead of fuel. They have the same tiers as the
+fuel furnaces, plus a plain Electric Furnace with the speed of a vanilla furnace.
+
+- Each item costs 20 FE per tick of its recipe: 4,000 FE for a recipe that takes 200 ticks.
+- Energy can come in from any face.
+- The sides take items to smelt, like the top.
+
+| Furnace | Stores (FE) |
+|---|---:|
+| Electric Furnace | 8,000 |
+| Tier 1 | 9,600 |
+| Tier 8 | 2,147,483,647 |
+
 ## Slots
 
 A slot holds two smelts' worth of items, or one stack, whichever is more.
@@ -51,7 +66,17 @@ A slot holds two smelts' worth of items, or one stack, whichever is more.
 
 ## Recipes
 
-Tier 1 to 6:
+Electric Furnace:
+
+```
+C C C
+C F C
+C R C
+```
+
+C: Cobblestone. F: Furnace. R: Block of Redstone.
+
+Tier 1 to 6 (fuel and electric):
 
 ```
 M S M
@@ -59,7 +84,7 @@ M F M
 M C M
 ```
 
-M: the tier's material. S: Sugar. F: the furnace one tier below (a vanilla Furnace for Tier 1). C: Block of Coal.
+M: the tier's material. S: Sugar. F: the furnace one tier below, of the same kind (for Tier 1: a vanilla Furnace, or the Electric Furnace). C: Block of Coal for fuel furnaces, Block of Redstone for electric ones.
 
 | Tier | Material |
 |---|---|
@@ -70,7 +95,7 @@ M: the tier's material. S: Sugar. F: the furnace one tier below (a vanilla Furna
 | 5 | Netherite Ingot |
 | 6 | Nether Star |
 
-Tier 7 and 8:
+Tier 7 and 8 (fuel and electric):
 
 | Tier | Recipe |
 |---|---|
@@ -81,6 +106,8 @@ Tier 7 and 8:
 
 `config/fornax-server.toml`, per tier: `ticks` and `batch` (items per smelt).
 `capacityBatches` sets how many smelts a slot holds.
+`electric.energyPerTick` is the FE per recipe tick, and `electric.bufferTicks` sets how long an
+electric furnace can run on what it stores.
 
 `config/fornax-client.toml`: `hideRecipeBook` hides the recipe book button.
 

@@ -1,8 +1,10 @@
 package io.github.capsicum0907.fornax.data;
 
+import java.util.Arrays;
 import java.util.Locale;
 
-import io.github.capsicum0907.fornax.FornaxRegistry;
+import io.github.capsicum0907.fornax.Kind;
+import io.github.capsicum0907.fornax.Rung;
 import io.github.capsicum0907.fornax.Tier;
 
 public final class Skins {
@@ -16,6 +18,12 @@ public final class Skins {
     private static final int EMBER = 0xC8461B;
     private static final int MOUTH_LIT = 0xFF9A2E;
     private static final int FIRE_CORE = 0xFFE08A;
+    private static final int REDSTONE = 0xB02E26;
+    private static final int REDSTONE_DIM = 0x4A120F;
+    private static final int REDSTONE_LIT = 0xFF5A3C;
+    private static final int COIL_EVERY = 2;
+    private static final int CLEAR = 0x00000000;
+    public static final String OVERLAY = "electric_furnace_overlay";
 
     private static final float METAL_MID = 0.78F;
     private static final float METAL_DARK = 0.55F;
@@ -56,19 +64,25 @@ public final class Skins {
     private Skins() {
     }
 
-    public static String name(Tier tier, Face face, boolean lit) {
-        return FornaxRegistry.id(tier) + "_" + face.id() + (lit ? "_on" : "");
+    public static String name(Rung rung, Face face, boolean lit) {
+        return rung.id() + "_" + face.id() + (lit ? "_on" : "");
+    }
+
+    public static String overlayName(boolean lit) {
+        return OVERLAY + (lit ? "_on" : "");
     }
 
     public static boolean lights(Face face) {
         return face == Face.FRONT;
     }
 
-    public static int[][] skin(Tier tier, Face face, boolean lit) {
+    public static int[][] skin(Rung rung, Face face, boolean lit) {
+        Tier tier = rung.tier();
+        boolean electric = rung.kind() == Kind.ELECTRIC;
         int[][] pixels = new int[SIZE][SIZE];
         plated(pixels, tier, 0, 0, SIZE - 1, SIZE - 1);
         switch (face) {
-            case FRONT -> front(pixels, tier, lit);
+            case FRONT -> front(pixels, tier, lit, electric);
             case SIDE -> rivets(pixels, tier);
             case TOP -> {
                 plated(pixels, tier, PLATE_INSET, PLATE_INSET, SIZE - 1 - PLATE_INSET, SIZE - 1 - PLATE_INSET);
@@ -78,8 +92,19 @@ public final class Skins {
         return pixels;
     }
 
-    private static void front(int[][] pixels, Tier tier, boolean lit) {
-        int slot = scale(tier.colour(), METAL_DEEP);
+    public static int[][] overlaySkin(boolean lit) {
+        int[][] pixels = new int[SIZE][SIZE];
+        for (int[] row : pixels) {
+            Arrays.fill(row, CLEAR);
+        }
+        for (int row : VENT_ROWS) {
+            paint(pixels, VENT_LEFT, row, VENT_RIGHT, row, (x, y) -> lit ? REDSTONE_LIT : REDSTONE);
+        }
+        return pixels;
+    }
+
+    private static void front(int[][] pixels, Tier tier, boolean lit, boolean electric) {
+        int slot = electric ? (lit ? REDSTONE_LIT : REDSTONE) : scale(tier.colour(), METAL_DEEP);
         for (int row : VENT_ROWS) {
             paint(pixels, VENT_LEFT, row, VENT_RIGHT, row, (x, y) -> slot);
         }
@@ -87,6 +112,9 @@ public final class Skins {
         paint(pixels, MOUTH_LEFT, MOUTH_TOP, MOUTH_RIGHT, MOUTH_BOTTOM, (x, y) -> {
             if (x % GRILL_EVERY == GRILL_EVERY - 1) {
                 return scale(tier.colour(), METAL_DARK);
+            }
+            if (electric) {
+                return (y - MOUTH_TOP) % COIL_EVERY == 0 ? (lit ? REDSTONE_LIT : REDSTONE_DIM) : CAVITY;
             }
             if (lit) {
                 return fire(x, y);

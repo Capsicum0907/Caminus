@@ -7,6 +7,15 @@
     "fornax:netherite_furnace",
     "fornax:nether_star_furnace",
     "fornax:compressed_nether_star_furnace",
-    "fornax:super_compressed_nether_star_furnace"
+    "fornax:super_compressed_nether_star_furnace",
+    "fornax:electric_furnace",
+    "fornax:copper_electric_furnace",
+    "fornax:iron_electric_furnace",
+    "fornax:gold_electric_furnace",
+    "fornax:diamond_electric_furnace",
+    "fornax:netherite_electric_furnace",
+    "fornax:nether_star_electric_furnace",
+    "fornax:compressed_nether_star_electric_furnace",
+    "fornax:super_compressed_nether_star_electric_furnace"
   ]
 }
