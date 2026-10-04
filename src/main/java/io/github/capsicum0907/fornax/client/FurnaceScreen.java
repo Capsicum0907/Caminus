@@ -14,6 +14,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.items.SlotItemHandler;
 
 import io.github.capsicum0907.fornax.FurnaceMenu;
 import io.github.capsicum0907.fornax.Layout;
@@ -38,6 +40,10 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     private static final int EMPTY_ARROW_V = 34;
     private static final int TEXTURE_SIZE = 256;
     private static final float QUARTER_TURN = 90.0F;
+    private static final int COUNT_ROOM = 14;
+    private static final int COUNT_CORNER = 17;
+    private static final float ABOVE_ITEM = 200.0F;
+    private static final int COUNT_COLOUR = 0xFFFFFF;
     private static final int NARROW_BELOW = 379;
 
     private final SmeltingRecipeBookComponent recipeBook = new SmeltingRecipeBookComponent();
@@ -162,6 +168,23 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     private static void stretch(GuiGraphics graphics, int x, int y, int width, int height, int u, int v,
             int uWidth, int vHeight) {
         graphics.blit(TEXTURE, x, y, width, height, u, v, uWidth, vHeight, TEXTURE_SIZE, TEXTURE_SIZE);
+    }
+
+    @Override
+    protected void renderSlotContents(GuiGraphics graphics, ItemStack stack, Slot slot, String countString) {
+        String count = String.valueOf(stack.getCount());
+        int width = font.width(count);
+        if (countString != null || !(slot instanceof SlotItemHandler) || stack.getCount() == 1 || width <= COUNT_ROOM) {
+            super.renderSlotContents(graphics, stack, slot, countString);
+            return;
+        }
+        super.renderSlotContents(graphics, stack, slot, "");
+        float scale = COUNT_ROOM / (float) width;
+        graphics.pose().pushPose();
+        graphics.pose().translate(slot.x + COUNT_CORNER, slot.y + COUNT_CORNER, ABOVE_ITEM);
+        graphics.pose().scale(scale, scale, 1.0F);
+        graphics.drawString(font, count, -width, -(font.lineHeight - 1), COUNT_COLOUR, true);
+        graphics.pose().popPose();
     }
 
     @Override
