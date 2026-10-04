@@ -7,6 +7,8 @@ public final class Layout {
     public static final int ARROW_HEIGHT = 16;
     public static final int INVENTORY_ROWS = 3;
     public static final int INVENTORY_COLUMNS = 9;
+    public static final int BOOK_WIDTH = 20;
+    public static final int BOOK_HEIGHT = 18;
 
     private static final int VANILLA_WIDTH = 176;
     private static final int VANILLA_HEIGHT = 166;
@@ -24,6 +26,9 @@ public final class Layout {
     private static final int VANILLA_INVENTORY_Y = 84;
     private static final int VANILLA_HOTBAR_Y = 142;
     private static final int VANILLA_LABEL_ABOVE_BOTTOM = 94;
+    private static final int VANILLA_BOOK_X = 20;
+    private static final int VANILLA_BOOK_ABOVE_MIDDLE = 49;
+    private static final int BOOK_GAP = 4;
 
     private static final int FRAME_TOP = 16;
     private static final int EDGE = 7;
@@ -46,7 +51,7 @@ public final class Layout {
         this.vanilla = lines == 1;
         this.columns = (int) Math.ceil(Math.sqrt(lines));
         this.grid = columns * SLOT;
-        int content = grid * 2 + ARROW_GAP * 2 + ARROW_WIDTH;
+        int content = BOOK_WIDTH + BOOK_GAP + grid * 2 + ARROW_GAP * 2 + ARROW_WIDTH;
         this.width = vanilla ? VANILLA_WIDTH : Math.max(VANILLA_WIDTH, content + EDGE * 2);
         this.left = (width - content) / 2;
     }
@@ -63,8 +68,21 @@ public final class Layout {
         return width;
     }
 
+    private int gridLeft() {
+        return left + BOOK_WIDTH + BOOK_GAP;
+    }
+
+    public int bookX() {
+        return vanilla ? VANILLA_BOOK_X : left;
+    }
+
+    public int bookY(int screenHeight, int top) {
+        return vanilla ? screenHeight / 2 - VANILLA_BOOK_ABOVE_MIDDLE
+                : top + FRAME_TOP + (grid - BOOK_HEIGHT) / 2;
+    }
+
     public int inputX(int line) {
-        return vanilla ? VANILLA_INPUT_X : left + line % columns * SLOT + 1;
+        return vanilla ? VANILLA_INPUT_X : gridLeft() + line % columns * SLOT + 1;
     }
 
     public int inputY(int line) {
@@ -72,7 +90,7 @@ public final class Layout {
     }
 
     public int outputX(int line) {
-        return vanilla ? VANILLA_OUTPUT_X : left + grid + ARROW_GAP * 2 + ARROW_WIDTH + line % columns * SLOT + 1;
+        return vanilla ? VANILLA_OUTPUT_X : gridLeft() + grid + ARROW_GAP * 2 + ARROW_WIDTH + line % columns * SLOT + 1;
     }
 
     public int outputY(int line) {
@@ -80,7 +98,7 @@ public final class Layout {
     }
 
     public int arrowX() {
-        return vanilla ? VANILLA_ARROW_X : left + grid + ARROW_GAP;
+        return vanilla ? VANILLA_ARROW_X : gridLeft() + grid + ARROW_GAP;
     }
 
     public int arrowY() {

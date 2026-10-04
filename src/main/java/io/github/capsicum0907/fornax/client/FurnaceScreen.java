@@ -36,10 +36,6 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     private static final int EMPTY_ARROW_V = 34;
     private static final int TEXTURE_SIZE = 256;
     private static final int NARROW_BELOW = 379;
-    private static final int BOOK_BUTTON_X = 20;
-    private static final int BOOK_BUTTON_ABOVE_MIDDLE = 49;
-    private static final int BOOK_BUTTON_WIDTH = 20;
-    private static final int BOOK_BUTTON_HEIGHT = 18;
 
     private final SmeltingRecipeBookComponent recipeBook = new SmeltingRecipeBookComponent();
     private boolean widthTooNarrow;
@@ -50,6 +46,7 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
         Layout layout = menu.layout();
         this.imageWidth = layout.width();
         this.imageHeight = layout.height();
+        this.inventoryLabelX = layout.inventoryX();
         this.inventoryLabelY = layout.inventoryLabelY();
     }
 
@@ -64,11 +61,13 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
         widthTooNarrow = width < NARROW_BELOW;
         recipeBook.init(width, height, minecraft, widthTooNarrow, menu);
         leftPos = recipeBook.updateScreenPosition(width, imageWidth);
-        addRenderableWidget(new ImageButton(leftPos + BOOK_BUTTON_X, height / 2 - BOOK_BUTTON_ABOVE_MIDDLE,
-                BOOK_BUTTON_WIDTH, BOOK_BUTTON_HEIGHT, RecipeBookComponent.RECIPE_BUTTON_SPRITES, button -> {
+        Layout layout = menu.layout();
+        int bookY = layout.bookY(height, topPos);
+        addRenderableWidget(new ImageButton(leftPos + layout.bookX(), bookY,
+                Layout.BOOK_WIDTH, Layout.BOOK_HEIGHT, RecipeBookComponent.RECIPE_BUTTON_SPRITES, button -> {
                     recipeBook.toggleVisibility();
                     leftPos = recipeBook.updateScreenPosition(width, imageWidth);
-                    button.setPosition(leftPos + BOOK_BUTTON_X, height / 2 - BOOK_BUTTON_ABOVE_MIDDLE);
+                    button.setPosition(leftPos + layout.bookX(), bookY);
                 }));
     }
 
