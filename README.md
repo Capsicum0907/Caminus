@@ -36,6 +36,7 @@ take proportionally longer or shorter.
 ## Fuel
 
 Each item costs the same fuel as in a vanilla furnace. One coal smelts 8 items in every tier.
+As in a vanilla furnace, fuel that is already burning keeps burning when there is nothing to smelt.
 
 ## Electric Furnaces
 
