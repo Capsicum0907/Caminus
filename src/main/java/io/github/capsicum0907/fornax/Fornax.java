@@ -15,6 +15,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import org.slf4j.Logger;
 
 import io.github.capsicum0907.fornax.client.FornaxClient;
+import io.github.capsicum0907.fornax.client.FornaxClientConfig;
 
 @Mod(Fornax.MODID)
 public class Fornax {
@@ -51,6 +52,7 @@ public class Fornax {
     @Mod(value = MODID, dist = Dist.CLIENT)
     public static class Client {
         public Client(IEventBus modEventBus, ModContainer modContainer) {
+            modContainer.registerConfig(ModConfig.Type.CLIENT, FornaxClientConfig.SPEC);
             modEventBus.addListener(FornaxClient::registerScreens);
         }
     }

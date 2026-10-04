@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "fornax:compressed_nether_star_furnace"
+        "recipe": "fornax:copper_furnace"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
@@ -11,7 +11,7 @@
       "conditions": {
         "items": [
           {
-            "items": "fornax:nether_star_furnace"
+            "items": "minecraft:furnace"
           }
         ]
       },
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "fornax:compressed_nether_star_furnace"
+      "fornax:copper_furnace"
     ]
   }
 }

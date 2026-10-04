@@ -6,8 +6,7 @@ Furnaces in eight tiers. Each tier smelts faster and more items at once.
 
 *Fornax* is Latin for a furnace.
 
-> **Status: in development.** The blocks are only in the creative tab. Tier 1 to 6 have no
-> recipe yet.
+> **Status: in development.**
 
 ## Target
 
@@ -52,6 +51,27 @@ A slot holds two smelts' worth of items, or one stack, whichever is more.
 
 ## Recipes
 
+Tier 1 to 6:
+
+```
+M S M
+M F M
+M C M
+```
+
+M: the tier's material. S: Sugar. F: the furnace one tier below (a vanilla Furnace for Tier 1). C: Block of Coal.
+
+| Tier | Material |
+|---|---|
+| 1 | Copper Ingot |
+| 2 | Iron Ingot |
+| 3 | Gold Ingot |
+| 4 | Diamond |
+| 5 | Netherite Ingot |
+| 6 | Nether Star |
+
+Tier 7 and 8:
+
 | Tier | Recipe |
 |---|---|
 | 7 | 8 × Tier 6 around a Ghast Tear |
@@ -61,6 +81,8 @@ A slot holds two smelts' worth of items, or one stack, whichever is more.
 
 `config/fornax-server.toml`, per tier: `ticks` and `batch` (items per smelt).
 `capacityBatches` sets how many smelts a slot holds.
+
+`config/fornax-client.toml`: `hideRecipeBook` hides the recipe book button.
 
 ## Build
 

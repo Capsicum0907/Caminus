@@ -32,6 +32,7 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
 
     private final SmeltingRecipeBookComponent recipeBook = new SmeltingRecipeBookComponent();
     private boolean widthTooNarrow;
+    private boolean book;
 
     public FurnaceScreen(FurnaceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -44,6 +45,11 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     @Override
     protected void init() {
         super.init();
+        titleLabelX = (imageWidth - font.width(title)) / 2;
+        book = !FornaxClientConfig.hideRecipeBook();
+        if (!book) {
+            return;
+        }
         widthTooNarrow = width < NARROW_BELOW;
         recipeBook.init(width, height, minecraft, widthTooNarrow, menu);
         leftPos = recipeBook.updateScreenPosition(width, imageWidth);
@@ -53,17 +59,23 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
                     leftPos = recipeBook.updateScreenPosition(width, imageWidth);
                     button.setPosition(leftPos + BOOK_BUTTON_X, height / 2 - BOOK_BUTTON_ABOVE_MIDDLE);
                 }));
-        titleLabelX = (imageWidth - font.width(title)) / 2;
     }
 
     @Override
     public void containerTick() {
         super.containerTick();
-        recipeBook.tick();
+        if (book) {
+            recipeBook.tick();
+        }
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (!book) {
+            super.render(graphics, mouseX, mouseY, partialTick);
+            renderTooltip(graphics, mouseX, mouseY);
+            return;
+        }
         if (recipeBook.isVisible() && widthTooNarrow) {
             renderBackground(graphics, mouseX, mouseY, partialTick);
             recipeBook.render(graphics, mouseX, mouseY, partialTick);
@@ -121,6 +133,9 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!book) {
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
         if (recipeBook.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
@@ -130,16 +145,22 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     @Override
     protected void slotClicked(Slot slot, int slotId, int mouseButton, ClickType type) {
         super.slotClicked(slot, slotId, mouseButton, type);
-        recipeBook.slotClicked(slot);
+        if (book) {
+            recipeBook.slotClicked(slot);
+        }
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return recipeBook.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
+        return book && recipeBook.keyPressed(keyCode, scanCode, modifiers)
+                || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int mouseButton) {
+        if (!book) {
+            return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop, mouseButton);
+        }
         boolean outside = mouseX < guiLeft || mouseY < guiTop
                 || mouseX >= guiLeft + imageWidth || mouseY >= guiTop + imageHeight;
         return recipeBook.hasClickedOutside(mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight, mouseButton)
@@ -148,12 +169,14 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
-        return recipeBook.charTyped(codePoint, modifiers) || super.charTyped(codePoint, modifiers);
+        return book && recipeBook.charTyped(codePoint, modifiers) || super.charTyped(codePoint, modifiers);
     }
 
     @Override
     public void recipesUpdated() {
-        recipeBook.recipesUpdated();
+        if (book) {
+            recipeBook.recipesUpdated();
+        }
     }
 
     @Override

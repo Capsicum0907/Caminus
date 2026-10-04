@@ -181,4 +181,14 @@ public final class FornaxTests {
             helper.succeed();
         });
     }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void everyTierHasARecipe(GameTestHelper helper) {
+        var recipes = helper.getLevel().getRecipeManager();
+        for (Tier tier : Tier.values()) {
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Fornax.MODID, FornaxRegistry.id(tier));
+            check(recipes.byKey(id).isPresent(), tier.id() + " should have a recipe");
+        }
+        helper.succeed();
+    }
 }

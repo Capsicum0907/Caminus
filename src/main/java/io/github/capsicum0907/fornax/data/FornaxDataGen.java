@@ -233,19 +233,51 @@ public final class FornaxDataGen {
         @Override
         protected void buildRecipes(RecipeOutput output) {
             for (Tier tier : Tier.values()) {
-                if (!tier.compressed()) {
-                    continue;
+                if (tier.compressed()) {
+                    compressed(output, tier);
+                } else {
+                    laddered(output, tier);
                 }
-                ItemLike under = FornaxRegistry.furnace(tier.under()).get();
-                ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.furnace(tier).get())
-                        .pattern("PPP")
-                        .pattern("PMP")
-                        .pattern("PPP")
-                        .define('P', under)
-                        .define('M', medium(tier))
-                        .unlockedBy("has_" + FornaxRegistry.id(tier.under()), has(under))
-                        .save(output);
             }
+        }
+
+        private void laddered(RecipeOutput output, Tier tier) {
+            ItemLike under = tier.under() == null ? Items.FURNACE : FornaxRegistry.furnace(tier.under()).get();
+            ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.furnace(tier).get())
+                    .pattern("MSM")
+                    .pattern("MFM")
+                    .pattern("MCM")
+                    .define('M', material(tier))
+                    .define('S', Items.SUGAR)
+                    .define('F', under)
+                    .define('C', Items.COAL_BLOCK)
+                    .unlockedBy("has_under", has(under))
+                    .save(output);
+        }
+
+        private void compressed(RecipeOutput output, Tier tier) {
+            ItemLike under = FornaxRegistry.furnace(tier.under()).get();
+            ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, FornaxRegistry.furnace(tier).get())
+                    .pattern("PPP")
+                    .pattern("PMP")
+                    .pattern("PPP")
+                    .define('P', under)
+                    .define('M', medium(tier))
+                    .unlockedBy("has_under", has(under))
+                    .save(output);
+        }
+
+        private static ItemLike material(Tier tier) {
+            return switch (tier) {
+                case COPPER -> Items.COPPER_INGOT;
+                case IRON -> Items.IRON_INGOT;
+                case GOLD -> Items.GOLD_INGOT;
+                case DIAMOND -> Items.DIAMOND;
+                case NETHERITE -> Items.NETHERITE_INGOT;
+                case NETHER_STAR -> Items.NETHER_STAR;
+                case COMPRESSED_NETHER_STAR, SUPER_COMPRESSED_NETHER_STAR ->
+                        throw new IllegalStateException(tier.id() + " is made of the tier below");
+            };
         }
 
         private static ItemLike medium(Tier tier) {
