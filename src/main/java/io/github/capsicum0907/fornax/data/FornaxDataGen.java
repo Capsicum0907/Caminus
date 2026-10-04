@@ -157,8 +157,8 @@ public final class FornaxDataGen {
         protected void registerStatesAndModels() {
             for (Rung rung : Rung.all()) {
                 String cold = rung.id();
-                ModelFile unlit = rung.vanilla() ? overlaid(cold, false) : model(rung, cold, false);
-                ModelFile lit = rung.vanilla() ? overlaid(cold + "_on", true) : model(rung, cold + "_on", true);
+                ModelFile unlit = model(rung, cold, false);
+                ModelFile lit = model(rung, cold + "_on", true);
                 horizontalBlock(FornaxRegistry.block(rung).get(),
                         state -> state.getValue(FurnaceBlock.LIT) ? lit : unlit);
                 itemModels().withExistingParent(cold, modLoc("block/" + cold));
@@ -166,26 +166,32 @@ public final class FornaxDataGen {
         }
 
         private ModelFile model(Rung rung, String name, boolean lit) {
-            return models().orientableWithBottom(name,
-                    modLoc("block/" + Skins.name(rung, Skins.Face.SIDE, false)),
-                    modLoc("block/" + Skins.name(rung, Skins.Face.FRONT, lit)),
-                    modLoc("block/" + Skins.name(rung, Skins.Face.TOP, false)),
-                    modLoc("block/" + Skins.name(rung, Skins.Face.TOP, false)));
+            ResourceLocation vanillaSide = mcLoc("block/furnace_side");
+            ResourceLocation vanillaTop = mcLoc("block/furnace_top");
+            ResourceLocation vanillaFront = mcLoc(lit ? "block/furnace_front_on" : "block/furnace_front");
+            if (rung.vanilla()) {
+                return layered(name, vanillaSide, vanillaTop, vanillaSide, modLoc("block/" + Skins.overlayName(lit)));
+            }
+            ResourceLocation side = modLoc("block/" + Skins.name(rung, Skins.Face.SIDE, false));
+            ResourceLocation top = modLoc("block/" + Skins.name(rung, Skins.Face.TOP, false));
+            ResourceLocation front = modLoc("block/" + Skins.name(rung, Skins.Face.FRONT, lit));
+            if (rung.kind() == Kind.ELECTRIC) {
+                return models().orientableWithBottom(name, side, front, top, top);
+            }
+            return layered(name, side, top, vanillaFront, front);
         }
 
-        private ModelFile overlaid(String name, boolean lit) {
-            ResourceLocation side = mcLoc("block/furnace_side");
-            ResourceLocation top = mcLoc("block/furnace_top");
-            ResourceLocation front = side;
+        private ModelFile layered(String name, ResourceLocation side, ResourceLocation top, ResourceLocation under,
+                ResourceLocation over) {
             var model = models().withExistingParent(name, mcLoc("block/block"))
                     .renderType("cutout")
-                    .texture("particle", front)
+                    .texture("particle", side)
                     .texture("side", side)
                     .texture("top", top)
-                    .texture("front", front)
-                    .texture("overlay", modLoc("block/" + Skins.overlayName(lit)));
+                    .texture("under", under)
+                    .texture("over", over);
             model.element().from(0, 0, 0).to(16, 16, 16)
-                    .face(Direction.NORTH).texture("#front").cullface(Direction.NORTH).end()
+                    .face(Direction.NORTH).texture("#under").cullface(Direction.NORTH).end()
                     .face(Direction.SOUTH).texture("#side").cullface(Direction.SOUTH).end()
                     .face(Direction.EAST).texture("#side").cullface(Direction.EAST).end()
                     .face(Direction.WEST).texture("#side").cullface(Direction.WEST).end()
@@ -193,7 +199,7 @@ public final class FornaxDataGen {
                     .face(Direction.DOWN).texture("#top").cullface(Direction.DOWN).end()
                     .end();
             model.element().from(0, 0, -OVERLAY_LIFT).to(16, 16, 0)
-                    .face(Direction.NORTH).texture("#overlay").cullface(Direction.NORTH).end()
+                    .face(Direction.NORTH).texture("#over").cullface(Direction.NORTH).end()
                     .end();
             return model;
         }

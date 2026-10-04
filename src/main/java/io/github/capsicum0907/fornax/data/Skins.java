@@ -14,10 +14,6 @@ public final class Skins {
     private static final int SHINE = 0xFFFFFF;
     private static final int PATINA = 0x4FA88A;
     private static final int CAVITY = 0x1A1614;
-    private static final int ASH = 0x3A3532;
-    private static final int EMBER = 0xC8461B;
-    private static final int MOUTH_LIT = 0xFF9A2E;
-    private static final int FIRE_CORE = 0xFFE08A;
     private static final int REDSTONE = 0xB02E26;
     private static final int REDSTONE_DIM = 0x4A120F;
     private static final int REDSTONE_LIT = 0xFF5A3C;
@@ -42,7 +38,6 @@ public final class Skins {
     private static final int STREAK_LENGTH = 4;
     private static final int STREAK_EVERY = 7;
     private static final int GLEAM_PER_RUNG = 3;
-    private static final int FLICKER = 18;
     private static final int GRILL_EVERY = 3;
 
     private static final int MOUTH_LEFT = 4;
@@ -55,7 +50,7 @@ public final class Skins {
     private static final int RIVET_INSET = 2;
     private static final int UPPER_ARCH = 3;
     private static final int LOWER_ARCH = 11;
-    private static final int[] ARCH_HALF_WIDTHS = { 3, 4, 5, 5 };
+    private static final int[] OPENING_HALF_WIDTHS = { 4, 5, 5, 5 };
     private static final int SHELF_TOP = 7;
     private static final int SHELF_BAND = 9;
     private static final int LEDGE_LIT = 10;
@@ -151,35 +146,23 @@ public final class Skins {
                 (x, y) -> mix(metal(tier, x, y), SHINE, LIP_SHINE));
         paint(pixels, 1, SHELF_BAND, SIZE - 2, SHELF_BAND, (x, y) -> mix(metal(tier, x, y), SHINE, SHELF_SHINE));
         paint(pixels, 1, SHELF_BAND + 1, SIZE - 2, SIZE - 2, (x, y) -> shift(metal(tier, x, y), LEDGE_LIT));
-        arch(pixels, tier, UPPER_ARCH, false);
-        arch(pixels, tier, LOWER_ARCH, lit);
+        arch(pixels, UPPER_ARCH, false);
+        arch(pixels, LOWER_ARCH, lit);
     }
 
-    private static void arch(int[][] pixels, Tier tier, int top, boolean fire) {
-        int rim = scale(tier.colour(), METAL_DEEP);
-        for (int row = 0; row < ARCH_HALF_WIDTHS.length; row++) {
-            int y = top + row;
-            int half = ARCH_HALF_WIDTHS[row];
-            int left = SIZE / 2 - half;
-            int right = SIZE / 2 - 1 + half;
-            pixels[y][left - 1] = OPAQUE | rim;
-            pixels[y][right + 1] = OPAQUE | rim;
-            int bottom = top + ARCH_HALF_WIDTHS.length - 1;
-            paint(pixels, left, y, right, y, (x, at) -> {
-                if (fire) {
-                    return fire(x, at, top, bottom);
-                }
-                return at == bottom ? ASH : CAVITY;
-            });
+    private static void arch(int[][] pixels, int top, boolean spill) {
+        for (int row = 0; row < OPENING_HALF_WIDTHS.length; row++) {
+            clear(pixels, top + row, OPENING_HALF_WIDTHS[row]);
+        }
+        if (spill) {
+            clear(pixels, top + OPENING_HALF_WIDTHS.length, OPENING_HALF_WIDTHS[OPENING_HALF_WIDTHS.length - 1]);
         }
     }
 
-    private static int fire(int x, int y, int top, int bottom) {
-        float down = (y - top) / (float) Math.max(1, bottom - top);
-        if (down > 0.5F && hash(x, y) % 100 < FLICKER) {
-            return FIRE_CORE;
+    private static void clear(int[][] pixels, int y, int half) {
+        for (int x = SIZE / 2 - half; x <= SIZE / 2 - 1 + half; x++) {
+            pixels[y][x] = CLEAR;
         }
-        return mix(EMBER, MOUTH_LIT, down);
     }
 
     private enum Finish { PATINA, BRUSHED, POLISHED, FACETED, DARK, GLEAM }

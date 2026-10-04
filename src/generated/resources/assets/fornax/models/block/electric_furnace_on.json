@@ -13,7 +13,7 @@
         },
         "north": {
           "cullface": "north",
-          "texture": "#front"
+          "texture": "#under"
         },
         "south": {
           "cullface": "south",
@@ -43,7 +43,7 @@
       "faces": {
         "north": {
           "cullface": "north",
-          "texture": "#overlay"
+          "texture": "#over"
         }
       },
       "from": [
@@ -60,10 +60,10 @@
   ],
   "render_type": "minecraft:cutout",
   "textures": {
-    "front": "minecraft:block/furnace_side",
-    "overlay": "fornax:block/electric_furnace_overlay_on",
+    "over": "fornax:block/electric_furnace_overlay_on",
     "particle": "minecraft:block/furnace_side",
     "side": "minecraft:block/furnace_side",
-    "top": "minecraft:block/furnace_top"
+    "top": "minecraft:block/furnace_top",
+    "under": "minecraft:block/furnace_side"
   }
 }
