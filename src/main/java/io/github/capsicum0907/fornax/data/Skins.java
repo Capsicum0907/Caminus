@@ -51,6 +51,13 @@ public final class Skins {
     private static final int VENT_RIGHT = 11;
     private static final int[] VENT_ROWS = { 3, 5 };
     private static final int RIVET_INSET = 2;
+    private static final int UPPER_ARCH = 3;
+    private static final int LOWER_ARCH = 11;
+    private static final int[] ARCH_HALF_WIDTHS = { 3, 4, 5, 5 };
+    private static final int SHELF_TOP = 7;
+    private static final int SHELF_BAND = 9;
+    private static final int LEDGE_LIT = 18;
+    private static final float SHELF_SHINE = 0.3F;
     private static final int PLATE_INSET = 3;
 
     public enum Face {
@@ -104,7 +111,11 @@ public final class Skins {
     }
 
     private static void front(int[][] pixels, Tier tier, boolean lit, boolean electric) {
-        int slot = electric ? (lit ? REDSTONE_LIT : REDSTONE) : scale(tier.colour(), METAL_DEEP);
+        if (!electric) {
+            hearth(pixels, tier, lit);
+            return;
+        }
+        int slot = lit ? REDSTONE_LIT : REDSTONE;
         for (int row : VENT_ROWS) {
             paint(pixels, VENT_LEFT, row, VENT_RIGHT, row, (x, y) -> slot);
         }
@@ -113,18 +124,38 @@ public final class Skins {
             if ((x - MOUTH_LEFT) % GRILL_EVERY == GRILL_EVERY - 1) {
                 return scale(tier.colour(), METAL_DARK);
             }
-            if (electric) {
-                return (y - MOUTH_TOP) % COIL_EVERY == 0 ? (lit ? REDSTONE_LIT : REDSTONE_DIM) : CAVITY;
-            }
-            if (lit) {
-                return fire(x, y);
-            }
-            return y == MOUTH_BOTTOM ? ASH : CAVITY;
+            return (y - MOUTH_TOP) % COIL_EVERY == 0 ? (lit ? REDSTONE_LIT : REDSTONE_DIM) : CAVITY;
         });
     }
 
-    private static int fire(int x, int y) {
-        float down = (y - MOUTH_TOP) / (float) Math.max(1, MOUTH_BOTTOM - MOUTH_TOP);
+    private static void hearth(int[][] pixels, Tier tier, boolean lit) {
+        paint(pixels, 1, SHELF_TOP, SIZE - 2, SHELF_TOP, (x, y) -> shift(metal(tier, x, y), LEDGE_LIT));
+        paint(pixels, 1, SHELF_BAND, SIZE - 2, SHELF_BAND + 1, (x, y) -> mix(metal(tier, x, y), SHINE, SHELF_SHINE));
+        arch(pixels, tier, UPPER_ARCH, false);
+        arch(pixels, tier, LOWER_ARCH, lit);
+    }
+
+    private static void arch(int[][] pixels, Tier tier, int top, boolean fire) {
+        int rim = scale(tier.colour(), METAL_DEEP);
+        for (int row = 0; row < ARCH_HALF_WIDTHS.length; row++) {
+            int y = top + row;
+            int half = ARCH_HALF_WIDTHS[row];
+            int left = SIZE / 2 - half;
+            int right = SIZE / 2 - 1 + half;
+            pixels[y][left - 1] = OPAQUE | rim;
+            pixels[y][right + 1] = OPAQUE | rim;
+            int bottom = top + ARCH_HALF_WIDTHS.length - 1;
+            paint(pixels, left, y, right, y, (x, at) -> {
+                if (fire) {
+                    return fire(x, at, top, bottom);
+                }
+                return at == bottom ? ASH : CAVITY;
+            });
+        }
+    }
+
+    private static int fire(int x, int y, int top, int bottom) {
+        float down = (y - top) / (float) Math.max(1, bottom - top);
         if (down > 0.5F && hash(x, y) % 100 < FLICKER) {
             return FIRE_CORE;
         }
