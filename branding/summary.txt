@@ -1,0 +1,1 @@
+Furnaces in eight tiers, on fuel or on Forge Energy. Each tier smelts faster and more at once, and fuel per item stays the same as the vanilla furnace.

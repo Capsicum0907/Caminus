@@ -6,6 +6,12 @@
 
 *Fornax* はラテン語で「かまど」です。
 
+## スクリーンショット
+
+![かまど](branding/gallery/01-card.png)
+
+ほかは [branding/gallery](branding/gallery) にあります。
+
 ## 対応環境
 
 | | |

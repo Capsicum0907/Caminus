@@ -6,6 +6,12 @@ Furnaces in eight tiers. Each tier smelts faster and more items at once.
 
 *Fornax* is Latin for a furnace.
 
+## Screenshots
+
+![Furnaces, lit](branding/gallery/01-card.png)
+
+More in [branding/gallery](branding/gallery).
+
 ## Target
 
 | | |
