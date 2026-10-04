@@ -43,8 +43,8 @@ public final class Skins {
     private static final int FLICKER = 18;
     private static final int GRILL_EVERY = 3;
 
-    private static final int MOUTH_LEFT = 3;
-    private static final int MOUTH_RIGHT = 12;
+    private static final int MOUTH_LEFT = 4;
+    private static final int MOUTH_RIGHT = 11;
     private static final int MOUTH_TOP = 8;
     private static final int MOUTH_BOTTOM = 13;
     private static final int VENT_LEFT = 4;
@@ -110,7 +110,7 @@ public final class Skins {
         }
         plated(pixels, tier, MOUTH_LEFT - 1, MOUTH_TOP - 1, MOUTH_RIGHT + 1, MOUTH_BOTTOM + 1);
         paint(pixels, MOUTH_LEFT, MOUTH_TOP, MOUTH_RIGHT, MOUTH_BOTTOM, (x, y) -> {
-            if (x % GRILL_EVERY == GRILL_EVERY - 1) {
+            if ((x - MOUTH_LEFT) % GRILL_EVERY == GRILL_EVERY - 1) {
                 return scale(tier.colour(), METAL_DARK);
             }
             if (electric) {
