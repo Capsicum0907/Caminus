@@ -51,6 +51,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     private final ItemStackHandler fuel;
     private final int[] progress;
     private final int[] total;
+    private final long[] planned;
     private final List<RecipeManager.CachedCheck<SingleRecipeInput, SmeltingRecipe>> checks = new ArrayList<>();
     private final Object2LongOpenHashMap<ResourceLocation> used = new Object2LongOpenHashMap<>();
     private final FurnaceData data;
@@ -84,10 +85,11 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         };
         this.progress = new int[lines];
         this.total = new int[lines];
+        this.planned = new long[lines];
         for (int line = 0; line < lines; line++) {
             checks.add(RecipeManager.createCheck(RecipeType.SMELTING));
         }
-        this.data = new FurnaceData(lines, () -> heat, () -> burnLength, () -> working ? 1 : 0, this::progressOf);
+        this.data = new FurnaceData(lines, this::shownHeat, () -> burnLength, () -> working ? 1 : 0, this::progressOf);
         this.inputView = new InputView(inputs);
         this.outputView = new OutputView(outputs, fuel);
     }
@@ -174,6 +176,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
             progress[line] = Math.max(0, progress[line] - COOLING);
             return false;
         }
+        planned[line] = (long) Math.min(batch(), input.getCount()) * cost;
         if (progress[line] < total[line]) {
             progress[line]++;
         }
@@ -186,6 +189,17 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     private void idle(int line) {
         progress[line] = 0;
         total[line] = 0;
+        planned[line] = 0;
+    }
+
+    private int shownHeat() {
+        double spent = 0;
+        for (int line = 0; line < progress.length; line++) {
+            if (total[line] > 0) {
+                spent += planned[line] * (double) progress[line] / total[line];
+            }
+        }
+        return (int) Math.max(0, Math.round(heat - spent));
     }
 
     private void finish(int line, RecipeHolder<SmeltingRecipe> recipe, ItemStack input, ItemStack result, int cost) {

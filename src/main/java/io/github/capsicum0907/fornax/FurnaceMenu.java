@@ -6,19 +6,27 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.RecipeBookMenu;
+import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
-public class FurnaceMenu extends AbstractContainerMenu {
+public class FurnaceMenu extends RecipeBookMenu<SingleRecipeInput, AbstractCookingRecipe> {
+    public static final int INGREDIENT_SLOT = 0;
+    public static final int FUEL_SLOT = 1;
+    public static final int RESULT_SLOT = 2;
+    public static final int RECIPE_SLOTS = 3;
+
     private static final double REACH = 8.0;
 
     private final FurnaceBlockEntity furnace;
@@ -49,13 +57,14 @@ public class FurnaceMenu extends AbstractContainerMenu {
         });
         ItemStackHandler fuel = furnace != null ? furnace.fuel() : clientFuel();
 
-        for (int line = 0; line < lines; line++) {
-            addSlot(new HeldSlot(inputs, line, layout.inputX(line), layout.inputY(line), true, player -> {
-            }));
-        }
+        addSlot(input(inputs, 0));
         addSlot(new SlotItemHandler(fuel, 0, layout.fuelX(), layout.fuelY()));
-        for (int line = 0; line < lines; line++) {
-            addSlot(new HeldSlot(outputs, line, layout.outputX(line), layout.outputY(line), false, this::award));
+        addSlot(output(outputs, 0));
+        for (int line = 1; line < lines; line++) {
+            addSlot(input(inputs, line));
+        }
+        for (int line = 1; line < lines; line++) {
+            addSlot(output(outputs, line));
         }
         for (int row = 0; row < Layout.INVENTORY_ROWS; row++) {
             for (int column = 0; column < Layout.INVENTORY_COLUMNS; column++) {
@@ -67,6 +76,15 @@ public class FurnaceMenu extends AbstractContainerMenu {
             addSlot(new Slot(inventory, column, Layout.INVENTORY_X + column * Layout.SLOT, layout.hotbarY()));
         }
         addDataSlots(this.data);
+    }
+
+    private HeldSlot input(Hold inputs, int line) {
+        return new HeldSlot(inputs, line, layout.inputX(line), layout.inputY(line), true, player -> {
+        });
+    }
+
+    private HeldSlot output(Hold outputs, int line) {
+        return new HeldSlot(outputs, line, layout.outputX(line), layout.outputY(line), false, this::award);
     }
 
     private static ItemStackHandler clientFuel() {
@@ -97,6 +115,18 @@ public class FurnaceMenu extends AbstractContainerMenu {
         return lines;
     }
 
+    public int inputSlot(int line) {
+        return line == 0 ? INGREDIENT_SLOT : RECIPE_SLOTS + line - 1;
+    }
+
+    public int outputSlot(int line) {
+        return line == 0 ? RESULT_SLOT : RECIPE_SLOTS + lines - 1 + line - 1;
+    }
+
+    private int machineSlots() {
+        return lines * 2 + 1;
+    }
+
     public float burned() {
         return FurnaceBlockEntity.burned(FurnaceData.heat(data), FurnaceData.burnLength(data));
     }
@@ -109,17 +139,64 @@ public class FurnaceMenu extends AbstractContainerMenu {
         return FurnaceData.progress(data, line);
     }
 
-    private int fuelSlot() {
-        return lines;
-    }
-
-    private int machineSlots() {
-        return lines * 2 + 1;
-    }
-
     private boolean smeltable(ItemStack stack) {
         return level.getRecipeManager()
                 .getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(stack), level).isPresent();
+    }
+
+    @Override
+    public void fillCraftSlotsStackedContents(StackedContents contents) {
+        for (int slot = 0; slot < RECIPE_SLOTS; slot++) {
+            contents.accountStack(getSlot(slot).getItem());
+        }
+    }
+
+    @Override
+    public void clearCraftingContent() {
+        getSlot(INGREDIENT_SLOT).set(ItemStack.EMPTY);
+        getSlot(RESULT_SLOT).set(ItemStack.EMPTY);
+    }
+
+    @Override
+    public boolean recipeMatches(RecipeHolder<AbstractCookingRecipe> recipe) {
+        return recipe.value().matches(new SingleRecipeInput(getSlot(INGREDIENT_SLOT).getItem()), level);
+    }
+
+    @Override
+    protected void finishPlacingRecipe(RecipeHolder<AbstractCookingRecipe> recipe) {
+        if (furnace != null) {
+            furnace.setChanged();
+        }
+    }
+
+    @Override
+    public int getResultSlotIndex() {
+        return RESULT_SLOT;
+    }
+
+    @Override
+    public int getGridWidth() {
+        return 1;
+    }
+
+    @Override
+    public int getGridHeight() {
+        return 1;
+    }
+
+    @Override
+    public int getSize() {
+        return RECIPE_SLOTS;
+    }
+
+    @Override
+    public RecipeBookType getRecipeBookType() {
+        return RecipeBookType.FURNACE;
+    }
+
+    @Override
+    public boolean shouldMoveToInventory(int slotIndex) {
+        return slotIndex != FUEL_SLOT;
     }
 
     @Override
@@ -147,10 +224,12 @@ public class FurnaceMenu extends AbstractContainerMenu {
         }
         boolean moved = false;
         if (smeltable(inSlot)) {
-            moved = moveItemStackTo(inSlot, 0, lines, false);
+            for (int line = 0; line < lines && !inSlot.isEmpty(); line++) {
+                moved |= moveItemStackTo(inSlot, inputSlot(line), inputSlot(line) + 1, false);
+            }
         }
         if (!moved && FurnaceBlockEntity.burns(inSlot)) {
-            moved = moveItemStackTo(inSlot, fuelSlot(), fuelSlot() + 1, false);
+            moved = moveItemStackTo(inSlot, FUEL_SLOT, FUEL_SLOT + 1, false);
         }
         if (!moved) {
             int inventoryEnd = machine + Layout.INVENTORY_ROWS * Layout.INVENTORY_COLUMNS;
@@ -221,10 +300,6 @@ public class FurnaceMenu extends AbstractContainerMenu {
                 taken.accept(player);
             }
             super.onTake(player, stack);
-        }
-
-        public IItemHandler hold() {
-            return hold;
         }
     }
 }
