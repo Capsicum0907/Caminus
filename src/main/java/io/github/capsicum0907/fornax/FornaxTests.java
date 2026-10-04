@@ -325,4 +325,27 @@ public final class FornaxTests {
                 && !vanilla.is(BlockTags.NEEDS_DIAMOND_TOOL), "the plain electric furnace needs any pickaxe");
         helper.succeed();
     }
+
+    @GameTest(template = TestStructures.FLOOR)
+    public static void noSideShowsEverything(GameTestHelper helper) {
+        FurnaceBlockEntity furnace = place(helper, Tier.COPPER);
+        furnace.inputs().put(0, new ItemStack(Items.RAW_IRON, 5));
+        furnace.fuel().setStackInSlot(0, new ItemStack(Items.COAL, 3));
+        furnace.outputs().put(0, new ItemStack(Items.IRON_INGOT, 7));
+        IItemHandler whole = face(helper, null);
+        check(whole.getSlots() == 3, "input, fuel and output, not " + whole.getSlots() + " slots");
+        check(whole.getStackInSlot(0).is(Items.RAW_IRON) && whole.getStackInSlot(0).getCount() == 5, "the input");
+        check(whole.getStackInSlot(1).is(Items.COAL) && whole.getStackInSlot(1).getCount() == 3, "the fuel");
+        check(whole.getStackInSlot(2).is(Items.IRON_INGOT) && whole.getStackInSlot(2).getCount() == 7, "the output");
+        check(whole.extractItem(0, 5, true).isEmpty(), "the input cannot be pulled out");
+        check(whole.extractItem(1, 3, true).isEmpty(), "nor can burning fuel");
+        check(whole.extractItem(2, 7, true).getCount() == 7, "the output can");
+        whole.insertItem(0, new ItemStack(Items.COAL), false);
+        check(furnace.fuel().getStackInSlot(0).getCount() == 4, "coal put in goes to the fuel");
+        whole.insertItem(0, new ItemStack(Items.RAW_IRON), false);
+        check(furnace.inputs().getStackInSlot(0).getCount() == 6, "raw iron put in goes to the input");
+        placeElectric(helper, Tier.COPPER);
+        check(face(helper, null).getSlots() == 2, "an electric furnace shows input and output only");
+        helper.succeed();
+    }
 }

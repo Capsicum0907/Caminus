@@ -55,6 +55,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
     private final FurnaceData data;
     private final InputView inputView;
     private final OutputView outputView;
+    private final WholeView wholeView;
     private boolean working;
 
     public FurnaceBlockEntity(BlockPos pos, BlockState state) {
@@ -74,6 +75,7 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
         this.data = new FurnaceData(lines, this::gauge, power::gaugeFull, () -> working ? 1 : 0, this::progressOf);
         this.inputView = new InputView(inputs);
         this.outputView = new OutputView(outputs, power.fuel());
+        this.wholeView = new WholeView(inputs, power.fuel(), outputs, inputView, outputView, this::smeltable);
     }
 
     public Rung rung() {
@@ -110,6 +112,15 @@ public class FurnaceBlockEntity extends BlockEntity implements MenuProvider {
 
     public OutputView outputView() {
         return outputView;
+    }
+
+    public WholeView wholeView() {
+        return wholeView;
+    }
+
+    private boolean smeltable(ItemStack stack) {
+        return level != null && level.getRecipeManager()
+                .getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(stack), level).isPresent();
     }
 
     public int heat() {

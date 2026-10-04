@@ -45,10 +45,13 @@ public class Fornax {
     }
 
     public static IItemHandler face(FurnaceBlockEntity furnace, Direction side) {
+        if (side == null) {
+            return furnace.wholeView();
+        }
         if (side == Direction.DOWN) {
             return furnace.outputView();
         }
-        if (side == Direction.UP || side == null) {
+        if (side == Direction.UP) {
             return furnace.inputView();
         }
         return furnace.fuel();
