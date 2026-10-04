@@ -64,6 +64,6 @@
     "particle": "minecraft:block/furnace_side",
     "side": "minecraft:block/furnace_side",
     "top": "minecraft:block/furnace_top",
-    "under": "minecraft:block/furnace_side"
+    "under": "minecraft:block/furnace_front"
   }
 }

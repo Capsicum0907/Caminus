@@ -13,14 +13,15 @@ public final class Skins {
     private static final int OPAQUE = 0xFF000000;
     private static final int SHINE = 0xFFFFFF;
     private static final int PATINA = 0x4FA88A;
-    private static final int CAVITY = 0x1A1614;
-    private static final int REDSTONE = 0xB02E26;
     private static final int REDSTONE_DIM = 0x4A120F;
     private static final int REDSTONE_LIT = 0xFF5A3C;
-    private static final int COIL_EVERY = 2;
+    private static final int COIL_HOT = 0xFFC896;
+    private static final int HOT_EVERY = 3;
+    private static final int[] COIL_ROWS = { 1, 3 };
+    private static final int LAMP_X = 13;
+    private static final int LAMP_Y = 8;
+    private static final float LAMP_SHADE = 0.7F;
     private static final int CLEAR = 0x00000000;
-    private static final int STONE_LIGHT = 0x9C9C9C;
-    private static final int STONE_DARK = 0x4A4A4A;
     public static final String OVERLAY = "electric_furnace_overlay";
 
     private static final float METAL_MID = 0.78F;
@@ -38,15 +39,7 @@ public final class Skins {
     private static final int STREAK_LENGTH = 4;
     private static final int STREAK_EVERY = 7;
     private static final int GLEAM_PER_RUNG = 3;
-    private static final int GRILL_EVERY = 3;
 
-    private static final int MOUTH_LEFT = 4;
-    private static final int MOUTH_RIGHT = 11;
-    private static final int MOUTH_TOP = 8;
-    private static final int MOUTH_BOTTOM = 13;
-    private static final int VENT_LEFT = 4;
-    private static final int VENT_RIGHT = 11;
-    private static final int[] VENT_ROWS = { 3, 5 };
     private static final int RIVET_INSET = 2;
     private static final int UPPER_ARCH = 3;
     private static final int LOWER_ARCH = 11;
@@ -104,40 +97,28 @@ public final class Skins {
         for (int[] row : pixels) {
             Arrays.fill(row, CLEAR);
         }
-        vents(pixels, lit);
-        paint(pixels, MOUTH_LEFT - 1, MOUTH_TOP - 1, MOUTH_RIGHT + 1, MOUTH_BOTTOM + 1, (x, y) -> {
-            if (y == MOUTH_TOP - 1 || x == MOUTH_LEFT - 1) {
-                return STONE_LIGHT;
-            }
-            return STONE_DARK;
-        });
-        grill(pixels, STONE_DARK, lit);
+        element(pixels, lit);
         return pixels;
     }
 
-    private static void vents(int[][] pixels, boolean lit) {
-        for (int row : VENT_ROWS) {
-            paint(pixels, VENT_LEFT, row, VENT_RIGHT, row, (x, y) -> lit ? REDSTONE_LIT : REDSTONE);
-        }
-    }
-
-    private static void grill(int[][] pixels, int bar, boolean lit) {
-        paint(pixels, MOUTH_LEFT, MOUTH_TOP, MOUTH_RIGHT, MOUTH_BOTTOM, (x, y) -> {
-            if ((x - MOUTH_LEFT) % GRILL_EVERY == GRILL_EVERY - 1) {
-                return bar;
-            }
-            return (y - MOUTH_TOP) % COIL_EVERY == 0 ? (lit ? REDSTONE_LIT : REDSTONE_DIM) : CAVITY;
-        });
-    }
-
     private static void front(int[][] pixels, Tier tier, boolean lit, boolean electric) {
-        if (!electric) {
-            hearth(pixels, tier, lit);
-            return;
+        hearth(pixels, tier, lit && !electric);
+        if (electric) {
+            element(pixels, lit);
         }
-        vents(pixels, lit);
-        plated(pixels, tier, MOUTH_LEFT - 1, MOUTH_TOP - 1, MOUTH_RIGHT + 1, MOUTH_BOTTOM + 1);
-        grill(pixels, scale(tier.colour(), METAL_DARK), lit);
+    }
+
+    private static void element(int[][] pixels, boolean lit) {
+        for (int row : COIL_ROWS) {
+            int y = LOWER_ARCH + row;
+            int half = OPENING_HALF_WIDTHS[row];
+            for (int x = SIZE / 2 - half; x <= SIZE / 2 - 1 + half; x++) {
+                int colour = lit ? ((x + y) % HOT_EVERY == 0 ? COIL_HOT : REDSTONE_LIT) : REDSTONE_DIM;
+                pixels[y][x] = OPAQUE | colour;
+            }
+        }
+        pixels[LAMP_Y][LAMP_X] = OPAQUE | (lit ? REDSTONE_LIT : REDSTONE_DIM);
+        pixels[LAMP_Y + 1][LAMP_X] = OPAQUE | scale(lit ? REDSTONE_LIT : REDSTONE_DIM, LAMP_SHADE);
     }
 
     private static void hearth(int[][] pixels, Tier tier, boolean lit) {

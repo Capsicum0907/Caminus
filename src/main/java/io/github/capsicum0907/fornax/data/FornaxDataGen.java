@@ -168,16 +168,14 @@ public final class FornaxDataGen {
         private ModelFile model(Rung rung, String name, boolean lit) {
             ResourceLocation vanillaSide = mcLoc("block/furnace_side");
             ResourceLocation vanillaTop = mcLoc("block/furnace_top");
-            ResourceLocation vanillaFront = mcLoc(lit ? "block/furnace_front_on" : "block/furnace_front");
+            boolean fire = lit && rung.kind() == Kind.FUEL;
+            ResourceLocation vanillaFront = mcLoc(fire ? "block/furnace_front_on" : "block/furnace_front");
             if (rung.vanilla()) {
-                return layered(name, vanillaSide, vanillaTop, vanillaSide, modLoc("block/" + Skins.overlayName(lit)));
+                return layered(name, vanillaSide, vanillaTop, vanillaFront, modLoc("block/" + Skins.overlayName(lit)));
             }
             ResourceLocation side = modLoc("block/" + Skins.name(rung, Skins.Face.SIDE, false));
             ResourceLocation top = modLoc("block/" + Skins.name(rung, Skins.Face.TOP, false));
             ResourceLocation front = modLoc("block/" + Skins.name(rung, Skins.Face.FRONT, lit));
-            if (rung.kind() == Kind.ELECTRIC) {
-                return models().orientableWithBottom(name, side, front, top, top);
-            }
             return layered(name, side, top, vanillaFront, front);
         }
 

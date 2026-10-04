@@ -49,8 +49,12 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
     private static final int RESULT_FRAME = 26;
     private static final int RESULT_FRAME_INSET = 5;
     private static final int FRAME_EDGE = 1;
-    private static final int ENERGY = 0xFFB02E26;
-    private static final int ENERGY_EMPTY = 0xFF3A1210;
+    private static final int CELL_HEIGHT = 3;
+    private static final int CELL_INSET = 1;
+    private static final int CELL_ON = 0xFFFF5A3C;
+    private static final int CELL_ON_DARK = 0xFFBE3226;
+    private static final int CELL_OFF = 0xFF3C1612;
+    private static final int CELL_GAP = 0xFF222222;
     private static final int NARROW_BELOW = 379;
 
     private final SmeltingRecipeBookComponent recipeBook;
@@ -168,10 +172,16 @@ public class FurnaceScreen extends AbstractContainerScreen<FurnaceMenu> implemen
         int left = x + FRAME_EDGE;
         int top = y + FRAME_EDGE;
         int bottom = y + height - FRAME_EDGE;
-        graphics.fill(left, top, left + inner, bottom, ENERGY_EMPTY);
-        int filled = Math.round((bottom - top) * menu.charged());
-        if (filled > 0) {
-            graphics.fill(left, bottom - filled, left + inner, bottom, ENERGY);
+        graphics.fill(left, top, left + inner, bottom, CELL_GAP);
+        int lit = Math.round((bottom - top) * menu.charged());
+        for (int row = 0; row < bottom - top; row++) {
+            int step = row % CELL_HEIGHT;
+            if (step == CELL_HEIGHT - 1) {
+                continue;
+            }
+            int colour = row >= lit ? CELL_OFF : step == CELL_HEIGHT - 2 ? CELL_ON : CELL_ON_DARK;
+            int at = bottom - 1 - row;
+            graphics.fill(left + CELL_INSET, at, left + inner - CELL_INSET, at + 1, colour);
         }
     }
 

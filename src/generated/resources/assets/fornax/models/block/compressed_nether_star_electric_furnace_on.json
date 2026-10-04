@@ -1,9 +1,69 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#top"
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#side"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#under"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#side"
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#top"
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#side"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "north": {
+          "cullface": "north",
+          "texture": "#over"
+        }
+      },
+      "from": [
+        0,
+        0,
+        -0.01
+      ],
+      "to": [
+        16,
+        16,
+        0
+      ]
+    }
+  ],
+  "render_type": "minecraft:cutout",
   "textures": {
-    "bottom": "fornax:block/compressed_nether_star_electric_furnace_top",
-    "front": "fornax:block/compressed_nether_star_electric_furnace_front_on",
+    "over": "fornax:block/compressed_nether_star_electric_furnace_front_on",
+    "particle": "fornax:block/compressed_nether_star_electric_furnace_side",
     "side": "fornax:block/compressed_nether_star_electric_furnace_side",
-    "top": "fornax:block/compressed_nether_star_electric_furnace_top"
+    "top": "fornax:block/compressed_nether_star_electric_furnace_top",
+    "under": "minecraft:block/furnace_front"
   }
 }
